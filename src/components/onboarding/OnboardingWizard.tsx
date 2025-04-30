@@ -1,15 +1,14 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Progress } from "@/components/ui/progress";
-import SignUpStep from "./steps/SignUpStep";
 import PricingWizardStep from "./steps/PricingWizardStep";
 import SdkIntegrationStep from "./steps/SdkIntegrationStep";
 import PricingPageSetupStep from "./steps/PricingPageSetupStep";
 import StripeSetupStep from "./steps/StripeSetupStep";
 import CompletionStep from "./steps/CompletionStep";
+import { useNavigate } from "react-router-dom";
 
 const STEPS = [
-  "Sign Up",
   "Create Pricing",
   "SDK Integration",
   "Pricing Page",
@@ -18,6 +17,7 @@ const STEPS = [
 ];
 
 const OnboardingWizard = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [userData, setUserData] = useState({
     email: "",
@@ -27,6 +27,21 @@ const OnboardingWizard = () => {
     sdkIntegrated: false,
     stripeConnected: false,
   });
+
+  // Load user data from localStorage (created during signup)
+  useEffect(() => {
+    const storedUserData = localStorage.getItem('userData');
+    if (storedUserData) {
+      const parsedData = JSON.parse(storedUserData);
+      setUserData(prevData => ({
+        ...prevData,
+        ...parsedData
+      }));
+    } else {
+      // If no user data, redirect to sign up
+      navigate('/');
+    }
+  }, [navigate]);
 
   const progressPercentage = ((currentStep) / (STEPS.length - 1)) * 100;
 
@@ -47,22 +62,25 @@ const OnboardingWizard = () => {
   };
 
   const updateUserData = (data: Partial<typeof userData>) => {
-    setUserData((prev) => ({ ...prev, ...data }));
+    setUserData((prev) => {
+      const updated = { ...prev, ...data };
+      // Update localStorage
+      localStorage.setItem('userData', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const renderStep = () => {
     switch (currentStep) {
       case 0:
-        return <SignUpStep onNext={handleNext} updateUserData={updateUserData} userData={userData} />;
-      case 1:
         return <PricingWizardStep onNext={handleNext} onBack={handleBack} updateUserData={updateUserData} userData={userData} />;
-      case 2:
+      case 1:
         return <SdkIntegrationStep onNext={handleNext} onBack={handleBack} updateUserData={updateUserData} userData={userData} />;
-      case 3:
+      case 2:
         return <PricingPageSetupStep onNext={handleNext} onBack={handleBack} updateUserData={updateUserData} userData={userData} />;
-      case 4:
+      case 3:
         return <StripeSetupStep onNext={handleNext} onBack={handleBack} updateUserData={updateUserData} userData={userData} />;
-      case 5:
+      case 4:
         return <CompletionStep userData={userData} />;
       default:
         return null;

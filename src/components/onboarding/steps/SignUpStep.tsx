@@ -5,19 +5,15 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EyeIcon, EyeOffIcon, Quote } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-type SignUpStepProps = {
-  onNext: () => void;
-  updateUserData: (data: any) => void;
-  userData: any;
-};
-
-const SignUpStep = ({ onNext, updateUserData, userData }: SignUpStepProps) => {
-  const [email, setEmail] = useState(userData.email || "");
-  const [password, setPassword] = useState(userData.password || "");
+const SignUpScreen = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,20 +37,16 @@ const SignUpStep = ({ onNext, updateUserData, userData }: SignUpStepProps) => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // In a real app, we would make an API call to create the user
-      // const response = await fetch('/api/merchants', { 
-      //   method: 'POST',
-      //   body: JSON.stringify({ email, password }),
-      //   headers: { 'Content-Type': 'application/json' }
-      // });
-
-      // For now, we'll just update the user data and proceed
-      updateUserData({
-        email,
-        password,
-        merchantId: `merchant_${Math.random().toString(36).substring(2, 11)}`,
-      });
+      // For now, we'll just navigate to the onboarding flow
+      const merchantId = `merchant_${Math.random().toString(36).substring(2, 11)}`;
       
-      onNext();
+      // Store user data in localStorage (for demo purposes)
+      localStorage.setItem('userData', JSON.stringify({
+        email,
+        merchantId,
+      }));
+      
+      navigate("/onboarding");
     } catch (err) {
       console.error("Sign up error:", err);
       setError("An error occurred during sign up. Please try again.");
@@ -83,7 +75,7 @@ const SignUpStep = ({ onNext, updateUserData, userData }: SignUpStepProps) => {
   ];
 
   return (
-    <div className="flex flex-col md:flex-row min-h-[600px] -mx-6">
+    <div className="flex flex-col md:flex-row min-h-screen">
       {/* Left Column - Sign Up Form */}
       <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-center">
         <div className="max-w-md mx-auto w-full">
@@ -186,4 +178,4 @@ const SignUpStep = ({ onNext, updateUserData, userData }: SignUpStepProps) => {
   );
 };
 
-export default SignUpStep;
+export default SignUpScreen;
