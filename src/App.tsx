@@ -40,8 +40,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<SignUpScreen />} />
-          <Route path="/welcome" element={<Index />} />
+          {/* Landing page as root route */}
+          <Route path="/" element={<Index />} />
+          
+          {/* Auth routes */}
+          <Route path="/signup" element={<SignUpScreen />} />
           <Route path="/onboarding" element={<OnboardingWizard />} />
           
           {/* Authenticated routes with sidebar layout */}

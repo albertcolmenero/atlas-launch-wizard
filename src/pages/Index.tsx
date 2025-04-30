@@ -2,11 +2,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import { ArrowRight, Rocket, Sparkles, LayoutDashboard } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 
 const Index = () => {
   const [showWizard, setShowWizard] = useState(false);
+  const navigate = useNavigate();
 
   if (!showWizard) {
     return (
@@ -47,10 +49,10 @@ const Index = () => {
               
               <div className="pt-4">
                 <Button 
-                  onClick={() => setShowWizard(true)}
+                  onClick={() => navigate("/signup")}
                   className="group h-12 px-6 text-lg"
                 >
-                  Start Onboarding
+                  Get Started
                   <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </div>
