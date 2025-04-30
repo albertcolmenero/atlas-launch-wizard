@@ -20,6 +20,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Check, Settings, LayoutDashboard, DollarSign, ArrowRight } from "lucide-react";
 
+// Properly define the PlanType with strict typing
 type PlanType = {
   name: string;
   price: string;
@@ -44,17 +45,17 @@ const Dashboard = () => {
           name: "Basic",
           price: "29",
           features: [
-            { name: "Core Features", type: "boolean" },
-            { name: "Users", type: "limit", limit: "5" },
+            { name: "Core Features", type: "boolean" as const },
+            { name: "Users", type: "limit" as const, limit: "5" },
           ],
         },
         {
           name: "Pro",
           price: "79",
           features: [
-            { name: "Core Features", type: "boolean" },
-            { name: "Users", type: "limit", limit: "20" },
-            { name: "API Access", type: "boolean" },
+            { name: "Core Features", type: "boolean" as const },
+            { name: "Users", type: "limit" as const, limit: "20" },
+            { name: "API Access", type: "boolean" as const },
           ],
         }
       ]
