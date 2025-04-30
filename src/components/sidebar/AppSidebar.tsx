@@ -1,6 +1,6 @@
 
 import { useLocation } from "react-router-dom";
-import { LayoutDashboard, Widgets } from "lucide-react";
+import { LayoutDashboard, CircleDollarSign, Users, LayoutGrid, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -20,9 +20,24 @@ const mainNavItems = [
     icon: LayoutDashboard,
   },
   {
+    title: "Pricing Model",
+    path: "/pricing-model",
+    icon: CircleDollarSign,
+  },
+  {
+    title: "Customers",
+    path: "/customers",
+    icon: Users,
+  },
+  {
     title: "Widgets",
     path: "/widgets",
-    icon: Widgets,
+    icon: LayoutGrid,
+  },
+  {
+    title: "Integrations",
+    path: "/integrations",
+    icon: Settings,
   },
 ];
 
