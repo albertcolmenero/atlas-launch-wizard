@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -104,7 +105,11 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
       name: `Plan ${plans.length + 1}`,
       price: "",
       features: sharedFeatures.map(feature => {
-        return { name: feature, type: feature === "Users" || feature === "Projects" ? "limit" : "boolean", limit: "10" };
+        return { 
+          name: feature, 
+          type: feature === "Users" || feature === "Projects" ? "limit" : "boolean", 
+          limit: feature === "Users" || feature === "Projects" ? "10" : undefined 
+        } as FeatureType;
       }),
     };
     
