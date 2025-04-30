@@ -568,7 +568,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
           </div>
         </div>
         
-        <div className="flex justify-end">
+        <div className="flex flex-col gap-4 items-center">
           <Button 
             className="w-full md:w-auto" 
             onClick={handleManualSave} 
@@ -576,6 +576,17 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
           >
             Save Plans
           </Button>
+          
+          <a 
+            href="#" 
+            onClick={(e) => {
+              e.preventDefault();
+              window.open('mailto:sales@example.com?subject=Enterprise%20Pricing%20Inquiry', '_blank');
+            }}
+            className="text-primary hover:underline text-sm"
+          >
+            Do you have more sophisticated needs? Let's talk
+          </a>
         </div>
       </div>
     </div>
