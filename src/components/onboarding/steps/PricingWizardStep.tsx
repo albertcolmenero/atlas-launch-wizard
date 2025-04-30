@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Plus, Trash2, Check, X, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 type PricingWizardStepProps = {
   onNext: () => void;
@@ -479,25 +477,20 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
               </div>
               
               <div className="mb-4">
-                <Label className="mb-2 block">Plan Type</Label>
-                <RadioGroup 
+                <Label htmlFor={`plan-type-${planIndex}`}>Plan Type</Label>
+                <Select 
                   value={plan.planType} 
-                  onValueChange={(value) => updatePlanType(planIndex, value as "free" | "paid" | "custom")}
-                  className="flex flex-col space-y-1"
+                  onValueChange={(value: "free" | "paid" | "custom") => updatePlanType(planIndex, value)}
                 >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="free" id={`free-${planIndex}`} />
-                    <Label htmlFor={`free-${planIndex}`}>Free</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="paid" id={`paid-${planIndex}`} />
-                    <Label htmlFor={`paid-${planIndex}`}>Paid</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="custom" id={`custom-${planIndex}`} />
-                    <Label htmlFor={`custom-${planIndex}`}>Custom (Contact Sales)</Label>
-                  </div>
-                </RadioGroup>
+                  <SelectTrigger id={`plan-type-${planIndex}`} className="mt-1">
+                    <SelectValue placeholder="Select plan type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">Free</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="custom">Custom (Contact Sales)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
               {plan.planType === "paid" && (
