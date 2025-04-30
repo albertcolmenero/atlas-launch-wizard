@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -109,7 +108,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
           name: feature, 
           type: feature === "Users" || feature === "Projects" ? "limit" : "boolean", 
           limit: feature === "Users" || feature === "Projects" ? "10" : undefined 
-        } as FeatureType;
+        };
       }),
     };
     
@@ -204,7 +203,6 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
   const renderRecommendView = () => {
     const renderStep = () => {
       switch (currentRecommendStep) {
-        // ... keep existing code (steps 0-2 for recommendation flow)
         case 0:
           return (
             <>
