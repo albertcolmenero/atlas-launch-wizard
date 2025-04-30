@@ -6,11 +6,32 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
+import Widgets from "./pages/Widgets";
 import NotFound from "./pages/NotFound";
 import OnboardingWizard from "./components/onboarding/OnboardingWizard";
 import SignUpScreen from "./components/onboarding/steps/SignUpStep";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "./components/ui/sidebar";
+import { AppSidebar } from "./components/sidebar/AppSidebar";
 
 const queryClient = new QueryClient();
+
+// Layout component that wraps authenticated routes with sidebar
+const AppLayout = ({ children }: { children: React.ReactNode }) => (
+  <SidebarProvider>
+    <div className="flex min-h-screen w-full">
+      <AppSidebar />
+      <SidebarInset>
+        <div className="p-4">
+          <div className="flex items-center gap-2 mb-4">
+            <SidebarTrigger />
+            <h1 className="text-xl font-semibold">Atlas</h1>
+          </div>
+          {children}
+        </div>
+      </SidebarInset>
+    </div>
+  </SidebarProvider>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -22,7 +43,11 @@ const App = () => (
           <Route path="/" element={<SignUpScreen />} />
           <Route path="/welcome" element={<Index />} />
           <Route path="/onboarding" element={<OnboardingWizard />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          
+          {/* Authenticated routes with sidebar layout */}
+          <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
+          <Route path="/widgets" element={<AppLayout><Widgets /></AppLayout>} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
