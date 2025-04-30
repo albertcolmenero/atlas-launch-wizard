@@ -1,12 +1,12 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Plus, Trash2, Check, X } from "lucide-react";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { ArrowLeft, Plus, Trash2, Check, X, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type PricingWizardStepProps = {
@@ -55,24 +55,48 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
 
   const [newFeature, setNewFeature] = useState("");
   
-  // Recommended plan (mock)
-  const recommendedPlan: PlanType = {
-    name: "Basic Plan",
-    price: "29",
-    features: [
-      { name: "Core Features", type: "boolean" },
-      { name: "Users", type: "limit", limit: "100" },
-      { name: "Projects", type: "boolean" },
-      { name: "Basic Support", type: "boolean" },
-      { name: "API Access", type: "boolean" },
-    ],
-  };
+  // Recommended plans (expanded with more options)
+  const recommendedPlans: PlanType[] = [
+    {
+      name: "Basic Plan",
+      price: "29",
+      features: [
+        { name: "Core Features", type: "boolean" },
+        { name: "Users", type: "limit", limit: "5" },
+        { name: "Projects", type: "limit", limit: "3" },
+        { name: "Basic Support", type: "boolean" },
+      ],
+    },
+    {
+      name: "Pro Plan",
+      price: "79",
+      features: [
+        { name: "Core Features", type: "boolean" },
+        { name: "Users", type: "limit", limit: "20" },
+        { name: "Projects", type: "limit", limit: "10" },
+        { name: "Priority Support", type: "boolean" },
+        { name: "API Access", type: "boolean" },
+      ],
+    },
+    {
+      name: "Enterprise Plan",
+      price: "199",
+      features: [
+        { name: "Core Features", type: "boolean" },
+        { name: "Users", type: "limit", limit: "Unlimited" },
+        { name: "Projects", type: "limit", limit: "Unlimited" },
+        { name: "24/7 Support", type: "boolean" },
+        { name: "API Access", type: "boolean" },
+        { name: "Custom Integrations", type: "boolean" },
+      ],
+    }
+  ];
 
   const handleRecommendationComplete = () => {
     updateUserData({
       pricingModel: {
         type: "recommended",
-        plans: [recommendedPlan],
+        plans: recommendedPlans,
       },
     });
     onNext();
@@ -108,7 +132,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
           name: feature, 
           type: feature === "Users" || feature === "Projects" ? "limit" : "boolean", 
           limit: feature === "Users" || feature === "Projects" ? "10" : undefined 
-        };
+        } as FeatureType; // Add type assertion here
       }),
     };
     
@@ -160,7 +184,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
       if (!plan.features.some(f => f.name === newFeature)) {
         return {
           ...plan,
-          features: [...plan.features, { name: newFeature, type: "boolean" }]
+          features: [...plan.features, { name: newFeature, type: "boolean" } as FeatureType]
         };
       }
       return plan;
@@ -189,13 +213,28 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
       <h2 className="text-2xl font-bold mb-2">Set Up Your Pricing</h2>
       <p className="text-gray-500 mb-8">Choose how to monetize your app</p>
       
-      <div className="flex flex-col md:flex-row justify-center gap-4 mt-4">
-        <Button className="px-6 py-8 text-lg" onClick={() => setView("recommend")}>
-          Recommend a Pricing Model
-        </Button>
-        <Button className="px-6 py-8 text-lg" variant="outline" onClick={() => setView("manual")}>
-          Create Plans Manually
-        </Button>
+      <div className="flex flex-col md:flex-row justify-center gap-6 mt-8">
+        <Card className="p-6 border-2 border-primary hover:shadow-lg transition-all cursor-pointer transform hover:-translate-y-1 w-full md:w-64" 
+              onClick={() => setView("recommend")}>
+          <div className="mb-4 flex justify-center">
+            <Sparkles className="h-12 w-12 text-primary" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2 text-center">AI Recommendation</h3>
+          <p className="text-sm text-gray-500 text-center">Get AI-powered pricing suggestions based on your app type</p>
+          <Button className="w-full mt-4">Get Recommendations</Button>
+        </Card>
+        
+        <Card className="p-6 border-2 hover:shadow-lg transition-all cursor-pointer transform hover:-translate-y-1 w-full md:w-64" 
+              onClick={() => setView("manual")}>
+          <div className="mb-4 flex justify-center">
+            <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
+              <Plus className="h-8 w-8 text-gray-500" />
+            </div>
+          </div>
+          <h3 className="text-xl font-semibold mb-2 text-center">Custom Plans</h3>
+          <p className="text-sm text-gray-500 text-center">Create your own pricing tiers with custom features</p>
+          <Button className="w-full mt-4" variant="outline">Create Manually</Button>
+        </Card>
       </div>
     </div>
   );
@@ -207,19 +246,28 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
           return (
             <>
               <h3 className="text-xl font-semibold mb-4">What type of app are you building?</h3>
-              <Select value={appType} onValueChange={setAppType}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select app type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="saas">SaaS Application</SelectItem>
-                  <SelectItem value="content">Content Platform</SelectItem>
-                  <SelectItem value="ecommerce">E-commerce</SelectItem>
-                  <SelectItem value="mobile">Mobile App</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button className="mt-6" onClick={nextRecommendStep} disabled={!appType}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {[
+                  { value: "saas", label: "SaaS Application", icon: "💼" },
+                  { value: "content", label: "Content Platform", icon: "📱" },
+                  { value: "ecommerce", label: "E-commerce", icon: "🛒" },
+                  { value: "mobile", label: "Mobile App", icon: "📱" },
+                  { value: "other", label: "Other", icon: "✨" }
+                ].map(option => (
+                  <Card 
+                    key={option.value}
+                    className={cn(
+                      "p-4 cursor-pointer hover:border-primary transition-all",
+                      appType === option.value ? "border-2 border-primary bg-primary/5" : ""
+                    )}
+                    onClick={() => setAppType(option.value)}
+                  >
+                    <div className="text-2xl mb-2">{option.icon}</div>
+                    <div className="font-medium">{option.label}</div>
+                  </Card>
+                ))}
+              </div>
+              <Button className="mt-2" onClick={nextRecommendStep} disabled={!appType}>
                 Continue
               </Button>
             </>
@@ -228,18 +276,27 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
           return (
             <>
               <h3 className="text-xl font-semibold mb-4">Who are your customers?</h3>
-              <Select value={customerType} onValueChange={setCustomerType}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select customer type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="business">Businesses (B2B)</SelectItem>
-                  <SelectItem value="consumer">Consumers (B2C)</SelectItem>
-                  <SelectItem value="developer">Developers</SelectItem>
-                  <SelectItem value="mixed">Mixed audience</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button className="mt-6" onClick={nextRecommendStep} disabled={!customerType}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {[
+                  { value: "business", label: "Businesses (B2B)", icon: "🏢" },
+                  { value: "consumer", label: "Consumers (B2C)", icon: "👤" },
+                  { value: "developer", label: "Developers", icon: "👩‍💻" },
+                  { value: "mixed", label: "Mixed audience", icon: "🌐" }
+                ].map(option => (
+                  <Card 
+                    key={option.value}
+                    className={cn(
+                      "p-4 cursor-pointer hover:border-primary transition-all",
+                      customerType === option.value ? "border-2 border-primary bg-primary/5" : ""
+                    )}
+                    onClick={() => setCustomerType(option.value)}
+                  >
+                    <div className="text-2xl mb-2">{option.icon}</div>
+                    <div className="font-medium">{option.label}</div>
+                  </Card>
+                ))}
+              </div>
+              <Button className="mt-2" onClick={nextRecommendStep} disabled={!customerType}>
                 Continue
               </Button>
             </>
@@ -248,19 +305,28 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
           return (
             <>
               <h3 className="text-xl font-semibold mb-4">What's your key value metric?</h3>
-              <Select value={valueMetric} onValueChange={setValueMetric}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select value metric" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="users">Users</SelectItem>
-                  <SelectItem value="projects">Projects</SelectItem>
-                  <SelectItem value="api">API Calls</SelectItem>
-                  <SelectItem value="storage">Storage</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button className="mt-6" onClick={nextRecommendStep} disabled={!valueMetric}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {[
+                  { value: "users", label: "Users", icon: "👥" },
+                  { value: "projects", label: "Projects", icon: "📁" },
+                  { value: "api", label: "API Calls", icon: "🔄" },
+                  { value: "storage", label: "Storage", icon: "💾" },
+                  { value: "other", label: "Other", icon: "✨" }
+                ].map(option => (
+                  <Card 
+                    key={option.value}
+                    className={cn(
+                      "p-4 cursor-pointer hover:border-primary transition-all",
+                      valueMetric === option.value ? "border-2 border-primary bg-primary/5" : ""
+                    )}
+                    onClick={() => setValueMetric(option.value)}
+                  >
+                    <div className="text-2xl mb-2">{option.icon}</div>
+                    <div className="font-medium">{option.label}</div>
+                  </Card>
+                ))}
+              </div>
+              <Button className="mt-2" onClick={nextRecommendStep} disabled={!valueMetric}>
                 Continue
               </Button>
             </>
@@ -268,34 +334,43 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
         case 3:
           return (
             <>
-              <h3 className="text-xl font-semibold mb-4">Your Recommended Plan</h3>
-              <Card className="p-6">
-                <h4 className="text-lg font-bold">{recommendedPlan.name}</h4>
-                <p className="text-2xl font-bold mt-2">${recommendedPlan.price}/month</p>
-                <div className="mt-4">
-                  <h5 className="text-sm font-medium text-gray-500 mb-2">Features:</h5>
-                  <ul className="space-y-2">
-                    {recommendedPlan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-center">
-                        <Check size={16} className="text-green-500 mr-2" />
-                        <span>
-                          {feature.type === "limit" ? `${feature.name}: ${feature.limit}` : feature.name}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="flex gap-3 mt-6">
-                  <Button onClick={handleRecommendationComplete}>Use This Plan</Button>
-                  <Button variant="outline" onClick={() => {
-                    // Convert recommended plan to the new format
-                    setPlans([recommendedPlan]);
-                    setView("manual");
-                  }}>
-                    Edit Plan
-                  </Button>
-                </div>
-              </Card>
+              <h3 className="text-xl font-semibold mb-6">Recommended Pricing Structure</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {recommendedPlans.map((plan, idx) => (
+                  <Card key={idx} className={cn(
+                    "p-6 border relative overflow-hidden",
+                    idx === 1 ? "border-primary shadow-md" : ""
+                  )}>
+                    {idx === 1 && (
+                      <div className="absolute top-0 right-0 bg-primary text-white px-3 py-1 text-xs font-medium">
+                        RECOMMENDED
+                      </div>
+                    )}
+                    <h4 className="text-lg font-bold">{plan.name}</h4>
+                    <p className="text-3xl font-bold mt-2">${plan.price}<span className="text-sm font-normal text-gray-500">/month</span></p>
+                    <div className="mt-4 space-y-3">
+                      {plan.features.map((feature, fidx) => (
+                        <div key={fidx} className="flex items-center">
+                          <Check size={18} className="text-green-500 mr-2 shrink-0" />
+                          <span>
+                            {feature.type === "limit" ? `${feature.name}: ${feature.limit}` : feature.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+              <div className="mt-8 flex gap-3">
+                <Button onClick={handleRecommendationComplete} className="px-6">Use This Structure</Button>
+                <Button variant="outline" onClick={() => {
+                  // Convert recommended plans to the current format
+                  setPlans(recommendedPlans);
+                  setView("manual");
+                }}>
+                  Customize Plans
+                </Button>
+              </div>
             </>
           );
         default:
@@ -320,7 +395,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
           Back
         </Button>
 
-        <div className="max-w-md mx-auto">
+        <div className="max-w-2xl mx-auto">
           {renderStep()}
         </div>
       </div>
@@ -334,11 +409,11 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
         Back
       </Button>
 
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <h3 className="text-xl font-semibold mb-6">Create Your Pricing Plans</h3>
         
         {/* Feature Management */}
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
           <h4 className="font-medium mb-2">Manage Features</h4>
           <div className="flex gap-2">
             <Input 
@@ -350,6 +425,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
             <Button 
               onClick={addFeatureToAllPlans}
               disabled={!newFeature.trim()}
+              className="flex-shrink-0"
             >
               <Plus size={16} className="mr-1" /> Add Feature
             </Button>
@@ -360,7 +436,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
         </div>
         
         {/* Plans Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {plans.map((plan, planIndex) => (
             <Card key={planIndex} className="p-4 relative">
               <Button 
@@ -400,7 +476,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
                 <Label className="mb-1 block">Features</Label>
                 <div className="space-y-3 max-h-[300px] overflow-y-auto p-1">
                   {plan.features.map((feature, featureIndex) => (
-                    <div key={featureIndex} className="flex items-center gap-2 bg-gray-50 p-2 rounded">
+                    <div key={featureIndex} className="flex items-center gap-2 bg-gray-50 p-3 rounded-md">
                       <div className="flex-grow overflow-hidden">
                         <div className="text-sm font-medium truncate">{feature.name}</div>
                         
@@ -420,11 +496,11 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
                           
                           {feature.type === "limit" && (
                             <Input
-                              type="number"
+                              type="text"
                               placeholder="Limit"
                               value={feature.limit}
                               onChange={(e) => updateFeature(planIndex, featureIndex, 'limit', e.target.value)}
-                              className="h-7 text-xs w-[70px]"
+                              className="h-7 text-xs w-[90px]"
                             />
                           )}
                         </div>
@@ -447,11 +523,11 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
           
           {/* Add Plan Card */}
           <div 
-            className="border-2 border-dashed rounded-lg flex items-center justify-center h-[300px] cursor-pointer hover:bg-gray-50 transition-colors"
+            className="border-2 border-dashed rounded-lg flex items-center justify-center h-[350px] cursor-pointer hover:bg-gray-50 transition-colors"
             onClick={addNewPlan}
           >
             <div className="text-center">
-              <Plus size={24} className="mx-auto mb-2 text-gray-400" />
+              <Plus size={32} className="mx-auto mb-2 text-gray-400" />
               <div className="text-sm font-medium">Add Plan</div>
             </div>
           </div>
@@ -484,7 +560,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
   }
 
   return (
-    <div>
+    <div className="bg-white rounded-lg">
       {content}
     </div>
   );
