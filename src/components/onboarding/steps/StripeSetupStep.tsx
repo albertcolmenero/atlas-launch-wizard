@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { EyeIcon, EyeOffIcon, ArrowLeft, Check, AlertTriangle, Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 type StripeSetupStepProps = {
   onNext: () => void;
@@ -15,6 +16,7 @@ type StripeSetupStepProps = {
 };
 
 const StripeSetupStep = ({ onNext, onBack, updateUserData, userData }: StripeSetupStepProps) => {
+  const { toast } = useToast();
   const [apiKey, setApiKey] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -57,6 +59,14 @@ const StripeSetupStep = ({ onNext, onBack, updateUserData, userData }: StripeSet
     } finally {
       setIsConnecting(false);
     }
+  };
+
+  const handleSkip = () => {
+    toast({
+      title: "Step skipped",
+      description: "You can always connect Stripe later from your dashboard",
+    });
+    onNext();
   };
 
   return (
@@ -120,25 +130,37 @@ const StripeSetupStep = ({ onNext, onBack, updateUserData, userData }: StripeSet
             </p>
           </div>
           
-          <Button 
-            className="w-full" 
-            onClick={handleConnectStripe} 
-            disabled={isConnecting || connectionResult === "success"}
-          >
-            {isConnecting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Connecting...
-              </>
-            ) : connectionResult === "success" ? (
-              <>
-                <Check className="mr-2 h-4 w-4" />
-                Connected
-              </>
-            ) : (
-              "Connect Stripe"
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button 
+              className="flex-1" 
+              onClick={handleConnectStripe} 
+              disabled={isConnecting || connectionResult === "success"}
+            >
+              {isConnecting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Connecting...
+                </>
+              ) : connectionResult === "success" ? (
+                <>
+                  <Check className="mr-2 h-4 w-4" />
+                  Connected
+                </>
+              ) : (
+                "Connect Stripe"
+              )}
+            </Button>
+            
+            {connectionResult !== "success" && (
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={handleSkip}
+              >
+                Skip for now
+              </Button>
             )}
-          </Button>
+          </div>
         </div>
       </Card>
     </div>

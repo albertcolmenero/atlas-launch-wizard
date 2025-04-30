@@ -80,6 +80,14 @@ export default atlas;`;
     onNext();
   };
 
+  const handleSkip = () => {
+    toast({
+      title: "Step skipped",
+      description: "You can always integrate the SDK later from your dashboard",
+    });
+    onNext();
+  };
+
   return (
     <div>
       <Button variant="ghost" onClick={onBack} className="mb-6">
@@ -125,7 +133,7 @@ export default atlas;`;
 
         <div>
           <h3 className="text-lg font-medium mb-3">Step 3: Verify Integration</h3>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <Button 
               onClick={handleTestSdk} 
               disabled={isTesting || testResult === "success"}
@@ -145,8 +153,10 @@ export default atlas;`;
               )}
             </Button>
             
-            {testResult === "success" && (
+            {testResult === "success" ? (
               <Button onClick={handleContinue}>Continue</Button>
+            ) : (
+              <Button variant="outline" onClick={handleSkip}>Skip for now</Button>
             )}
           </div>
 
