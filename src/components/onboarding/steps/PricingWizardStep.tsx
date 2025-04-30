@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Plus, Trash2, Check, X, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 type PricingWizardStepProps = {
   onNext: () => void;
@@ -16,16 +17,17 @@ type PricingWizardStepProps = {
   userData: any;
 };
 
+type PlanType = {
+  name: string;
+  price: string;
+  planType: "free" | "paid" | "custom";
+  features: FeatureType[];
+};
+
 type FeatureType = {
   name: string;
   type: "boolean" | "limit";
   limit?: string;
-};
-
-type PlanType = {
-  name: string;
-  price: string;
-  features: FeatureType[];
 };
 
 const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: PricingWizardStepProps) => {
@@ -42,6 +44,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
     {
       name: "Basic",
       price: "29",
+      planType: "paid",
       features: [
         { name: "Core Features", type: "boolean" },
         { name: "Users", type: "limit", limit: "5" },
@@ -59,7 +62,8 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
   const recommendedPlans: PlanType[] = [
     {
       name: "Basic Plan",
-      price: "29",
+      price: "0",
+      planType: "free",
       features: [
         { name: "Core Features", type: "boolean" },
         { name: "Users", type: "limit", limit: "5" },
@@ -70,6 +74,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
     {
       name: "Pro Plan",
       price: "79",
+      planType: "paid",
       features: [
         { name: "Core Features", type: "boolean" },
         { name: "Users", type: "limit", limit: "20" },
@@ -80,7 +85,8 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
     },
     {
       name: "Enterprise Plan",
-      price: "199",
+      price: "",
+      planType: "custom",
       features: [
         { name: "Core Features", type: "boolean" },
         { name: "Users", type: "limit", limit: "Unlimited" },
@@ -103,7 +109,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
   };
 
   const handleManualSave = () => {
-    if (plans.length === 0 || !plans.every(plan => plan.name && plan.price)) {
+    if (plans.length === 0 || !plans.every(plan => plan.name)) {
       return; // Simple validation
     }
     
@@ -127,12 +133,13 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
     const newPlan: PlanType = {
       name: `Plan ${plans.length + 1}`,
       price: "",
+      planType: "paid",
       features: sharedFeatures.map(feature => {
         return { 
           name: feature, 
           type: feature === "Users" || feature === "Projects" ? "limit" : "boolean", 
           limit: feature === "Users" || feature === "Projects" ? "10" : undefined 
-        } as FeatureType; // Add type assertion here
+        } as FeatureType;
       }),
     };
     
@@ -148,6 +155,17 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
   const updatePlan = (index: number, field: string, value: string) => {
     const updatedPlans = [...plans];
     updatedPlans[index] = { ...updatedPlans[index], [field]: value };
+    setPlans(updatedPlans);
+  };
+
+  const updatePlanType = (index: number, planType: "free" | "paid" | "custom") => {
+    const updatedPlans = [...plans];
+    updatedPlans[index] = { 
+      ...updatedPlans[index], 
+      planType,
+      // Reset price for free and custom plans
+      price: planType === "free" ? "0" : planType === "custom" ? "" : updatedPlans[index].price
+    };
     setPlans(updatedPlans);
   };
 
@@ -461,16 +479,40 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
               </div>
               
               <div className="mb-4">
-                <Label htmlFor={`plan-price-${planIndex}`}>Base Price ($)</Label>
-                <Input
-                  id={`plan-price-${planIndex}`}
-                  type="number"
-                  placeholder="e.g., 29"
-                  value={plan.price}
-                  onChange={(e) => updatePlan(planIndex, 'price', e.target.value)}
-                  className="mt-1"
-                />
+                <Label className="mb-2 block">Plan Type</Label>
+                <RadioGroup 
+                  value={plan.planType} 
+                  onValueChange={(value) => updatePlanType(planIndex, value as "free" | "paid" | "custom")}
+                  className="flex flex-col space-y-1"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="free" id={`free-${planIndex}`} />
+                    <Label htmlFor={`free-${planIndex}`}>Free</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="paid" id={`paid-${planIndex}`} />
+                    <Label htmlFor={`paid-${planIndex}`}>Paid</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="custom" id={`custom-${planIndex}`} />
+                    <Label htmlFor={`custom-${planIndex}`}>Custom (Contact Sales)</Label>
+                  </div>
+                </RadioGroup>
               </div>
+              
+              {plan.planType === "paid" && (
+                <div className="mb-4">
+                  <Label htmlFor={`plan-price-${planIndex}`}>Price ($)</Label>
+                  <Input
+                    id={`plan-price-${planIndex}`}
+                    type="number"
+                    placeholder="e.g., 29"
+                    value={plan.price}
+                    onChange={(e) => updatePlan(planIndex, 'price', e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              )}
               
               <div>
                 <Label className="mb-1 block">Features</Label>
@@ -537,7 +579,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
           <Button 
             className="w-full md:w-auto" 
             onClick={handleManualSave} 
-            disabled={!plans.length || !plans.every(p => p.name && p.price)}
+            disabled={!plans.length || !plans.every(p => p.name)}
           >
             Save Plans
           </Button>
