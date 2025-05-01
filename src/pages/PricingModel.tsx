@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Check, Plus, Trash2, X, ArrowRight, Calendar, Clock, RefreshCw } from "lucide-react";
+import { Check, Plus, Trash2, X, ArrowRight, Calendar, Clock, RefreshCw, Settings2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { z } from "zod";
@@ -365,7 +364,7 @@ const PricingModel = () => {
                         className="h-8 w-8 text-gray-500"
                         onClick={() => setSelectedPlanIndex(planIndex === selectedPlanIndex ? null : planIndex)}
                       >
-                        <Settings size={16} />
+                        <Settings2 size={16} />
                       </Button>
                       <Button 
                         variant="ghost" 
@@ -474,43 +473,11 @@ const PricingModel = () => {
                   <CardContent className="pt-0">
                     {/* Features List */}
                     <h3 className="text-sm font-medium mb-2">Features:</h3>
-                    <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
-                      {plan.features.map((feature, featureIndex) => (
-                        <div key={featureIndex} className="flex items-center gap-2 bg-gray-50 p-2 rounded-md">
-                          <div className="flex-grow overflow-hidden">
-                            <div className="text-sm font-medium truncate">{feature.name}</div>
-                            
-                            <div className="flex items-center mt-1 gap-2">
-                              <Select 
-                                value={feature.type} 
-                                onValueChange={(value: "boolean" | "limit") => updateFeature(planIndex, featureIndex, 'type', value)}
-                              >
-                                <SelectTrigger className="h-7 text-xs px-2 w-[90px]">
-                                  <SelectValue placeholder="Type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="boolean">Included</SelectItem>
-                                  <SelectItem value="limit">Limited</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              
-                              {feature.type === "limit" && (
-                                <Input
-                                  type="text"
-                                  placeholder="Limit"
-                                  value={feature.limit}
-                                  onChange={(e) => updateFeature(planIndex, featureIndex, 'limit', e.target.value)}
-                                  className="h-7 text-xs w-[90px]"
-                                />
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                      {plan.features.length === 0 && (
-                        <p className="text-sm text-gray-500">No features added</p>
-                      )}
-                    </div>
+                    <PricingPlanFeatures 
+                      planIndex={planIndex} 
+                      features={plan.features} 
+                      updateFeature={updateFeature}
+                    />
                   </CardContent>
                 </Card>
               ))}
