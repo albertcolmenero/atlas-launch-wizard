@@ -1,6 +1,6 @@
 
 import { useLocation } from "react-router-dom";
-import { LayoutDashboard, CircleDollarSign, Users, LayoutGrid, Settings } from "lucide-react";
+import { LayoutDashboard, CircleDollarSign, Users, LayoutGrid, Link, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -37,6 +37,11 @@ const mainNavItems = [
   {
     title: "Integrations",
     path: "/integrations",
+    icon: Link,
+  },
+  {
+    title: "Settings",
+    path: "/settings",
     icon: Settings,
   },
 ];
