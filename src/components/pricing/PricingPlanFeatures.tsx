@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, X, ArrowUp, ArrowDown } from "lucide-react";
 import { useState } from "react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type FeatureType = {
   name: string;
@@ -22,6 +23,7 @@ type PricingPlanFeaturesProps = {
   removeFeatureFromPlan?: (planIndex: number, featureIndex: number) => void;
   moveFeatureUp?: (planIndex: number, featureIndex: number) => void;
   moveFeatureDown?: (planIndex: number, featureIndex: number) => void;
+  addFeatureToPlan?: (planIndex: number, featureName: string) => void;
 };
 
 export const PricingPlanFeatures = ({ 
@@ -32,7 +34,8 @@ export const PricingPlanFeatures = ({
   addFeatureToPlans,
   removeFeatureFromPlan,
   moveFeatureUp,
-  moveFeatureDown
+  moveFeatureDown,
+  addFeatureToPlan
 }: PricingPlanFeaturesProps) => {
   const [newFeature, setNewFeature] = useState("");
   

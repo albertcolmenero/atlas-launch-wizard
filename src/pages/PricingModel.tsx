@@ -23,6 +23,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { PricingModelAnalytics } from "@/components/pricing/PricingModelAnalytics";
 import { PricingPlanFeatures } from "@/components/pricing/PricingPlanFeatures";
 import { PricingPlanSettings } from "@/components/pricing/PricingPlanSettings";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // Define a TypeScript type for Plan and Feature
 type FeatureType = {
@@ -264,6 +265,11 @@ const PricingModel = () => {
       });
       setPlans(updatedPlans);
       
+      // If this is a new feature, add it to shared features too
+      if (!sharedFeatures.includes(featureName)) {
+        setSharedFeatures([...sharedFeatures, featureName]);
+      }
+      
       toast({
         title: "Feature added to plan",
         description: `${featureName} has been added to ${plans[planIndex].name}.`
@@ -455,22 +461,71 @@ const PricingModel = () => {
                       moveFeatureDown={moveFeatureDown}
                     />
                     
-                    {/* Add feature to plan */}
+                    {/* Add feature to plan with create option */}
                     <div className="flex gap-2 mt-4">
-                      <Select
-                        onValueChange={(value) => addFeatureToPlan(planIndex, value)}
-                      >
-                        <SelectTrigger className="text-sm">
-                          <SelectValue placeholder="Add feature" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {sharedFeatures
-                            .filter(feature => !plan.features.some(f => f.name === feature))
-                            .map((feature, idx) => (
-                              <SelectItem key={idx} value={feature}>{feature}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="w-full text-sm justify-between">
+                            Add feature <Plus size={16} />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 p-4">
+                          <div className="space-y-4">
+                            <h4 className="font-medium">Add a feature to this plan</h4>
+                            
+                            {/* Existing features dropdown */}
+                            {sharedFeatures
+                              .filter(feature => !plan.features.some(f => f.name === feature))
+                              .length > 0 ? (
+                              <div className="space-y-2">
+                                <h5 className="text-sm text-gray-500">Select from existing features:</h5>
+                                <Select
+                                  onValueChange={(value) => {
+                                    addFeatureToPlan(planIndex, value);
+                                  }}
+                                >
+                                  <SelectTrigger className="text-sm">
+                                    <SelectValue placeholder="Choose a feature" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {sharedFeatures
+                                      .filter(feature => !plan.features.some(f => f.name === feature))
+                                      .map((feature, idx) => (
+                                        <SelectItem key={idx} value={feature}>{feature}</SelectItem>
+                                      ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            ) : (
+                              <p className="text-sm text-gray-500">No existing features available to add.</p>
+                            )}
+                            
+                            {/* Create new feature input */}
+                            <div className="space-y-2">
+                              <h5 className="text-sm text-gray-500">Or create a new feature:</h5>
+                              <div className="flex gap-2">
+                                <Input 
+                                  placeholder="New feature name"
+                                  value={newFeature}
+                                  onChange={(e) => setNewFeature(e.target.value)}
+                                  className="flex-grow"
+                                />
+                                <Button 
+                                  onClick={() => {
+                                    if (newFeature.trim()) {
+                                      addFeatureToPlan(planIndex, newFeature);
+                                      setNewFeature("");
+                                    }
+                                  }}
+                                  disabled={!newFeature.trim()}
+                                >
+                                  Create
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     </div>
                     
                     {/* Trial and default plan settings */}
