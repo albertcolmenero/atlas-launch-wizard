@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -39,6 +40,7 @@ type PlanType = {
   trialAvailable?: boolean;
   trialDays?: number;
   defaultOnCancel?: boolean;
+  monthlyRevenue?: number; // Monthly recurring revenue
 };
 
 const PricingModel = () => {
@@ -55,6 +57,7 @@ const PricingModel = () => {
   const [analytics, setAnalytics] = useState({
     customersPerPlan: [12, 45, 8],
     churnRate: [1.2, 3.5, 4.8],
+    monthlyRevenue: [0, 3555, 12000],
     conversionRates: [
       { from: 0, to: 1, rate: 8.5 },
       { from: 1, to: 2, rate: 4.2 }
@@ -74,7 +77,9 @@ const PricingModel = () => {
             ...plan,
             trialAvailable: plan.trialAvailable || false,
             trialDays: plan.trialDays || 14,
-            defaultOnCancel: plan.defaultOnCancel || false
+            defaultOnCancel: plan.defaultOnCancel || false,
+            monthlyRevenue: plan.planType === 'paid' ? 
+              parseInt(plan.price || '0') * (analytics.customersPerPlan[parsedData.pricingModel.plans.indexOf(plan)] || 0) : 0
           })));
           
           // Extract all feature names to create shared features list
@@ -110,7 +115,8 @@ const PricingModel = () => {
           { name: "Users", type: "limit", limit: "5" },
         ],
         trialAvailable: false,
-        defaultOnCancel: true
+        defaultOnCancel: true,
+        monthlyRevenue: 0
       },
       {
         name: "Pro",
@@ -122,7 +128,8 @@ const PricingModel = () => {
           { name: "API Access", type: "boolean" },
         ],
         trialAvailable: true,
-        trialDays: 14
+        trialDays: 14,
+        monthlyRevenue: 3555 // 79 * 45 customers
       },
       {
         name: "Enterprise",
@@ -134,7 +141,8 @@ const PricingModel = () => {
           { name: "API Access", type: "boolean" },
           { name: "Premium Support", type: "boolean" },
         ],
-        trialAvailable: false
+        trialAvailable: false,
+        monthlyRevenue: 12000 // Custom price for enterprise
       }
     ];
     
@@ -185,7 +193,8 @@ const PricingModel = () => {
         };
       }),
       trialAvailable: false,
-      trialDays: 14
+      trialDays: 14,
+      monthlyRevenue: 0
     };
     
     const updatedPlans = [...plans, newPlan];
@@ -243,6 +252,26 @@ const PricingModel = () => {
     });
   };
   
+  const addFeatureToPlan = (planIndex: number, featureName: string) => {
+    if (!featureName.trim()) return;
+    
+    const updatedPlans = [...plans];
+    
+    // Check if the feature already exists in the plan
+    if (!updatedPlans[planIndex].features.some(f => f.name === featureName)) {
+      updatedPlans[planIndex].features.push({
+        name: featureName,
+        type: "boolean"
+      });
+      setPlans(updatedPlans);
+      
+      toast({
+        title: "Feature added to plan",
+        description: `${featureName} has been added to ${plans[planIndex].name}.`
+      });
+    }
+  };
+  
   const updateFeature = (planIndex: number, featureIndex: number, field: string, value: any) => {
     const updatedPlans = [...plans];
     if (field === 'type') {
@@ -282,6 +311,45 @@ const PricingModel = () => {
     });
   };
   
+  const removeFeatureFromPlan = (planIndex: number, featureIndex: number) => {
+    const updatedPlans = [...plans];
+    const featureToRemove = updatedPlans[planIndex].features[featureIndex].name;
+    
+    updatedPlans[planIndex].features.splice(featureIndex, 1);
+    setPlans(updatedPlans);
+    
+    toast({
+      title: "Feature removed from plan",
+      description: `${featureToRemove} has been removed from ${plans[planIndex].name}.`
+    });
+  };
+  
+  const moveFeatureUp = (planIndex: number, featureIndex: number) => {
+    if (featureIndex === 0) return;
+    
+    const updatedPlans = [...plans];
+    const features = [...updatedPlans[planIndex].features];
+    const temp = features[featureIndex];
+    features[featureIndex] = features[featureIndex - 1];
+    features[featureIndex - 1] = temp;
+    
+    updatedPlans[planIndex].features = features;
+    setPlans(updatedPlans);
+  };
+  
+  const moveFeatureDown = (planIndex: number, featureIndex: number) => {
+    const updatedPlans = [...plans];
+    const features = updatedPlans[planIndex].features;
+    
+    if (featureIndex === features.length - 1) return;
+    
+    const temp = features[featureIndex];
+    features[featureIndex] = features[featureIndex + 1];
+    features[featureIndex + 1] = temp;
+    
+    setPlans(updatedPlans);
+  };
+  
   const setDefaultOnCancelPlan = (planIndex: number) => {
     // Make sure only one plan can be the default
     const updatedPlans = plans.map((plan, idx) => ({
@@ -299,59 +367,15 @@ const PricingModel = () => {
         <p className="text-gray-500">Configure and manage your subscription plans</p>
       </div>
       
-      <div className="mb-6 flex justify-between items-center">
+      <div className="mb-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList>
             <TabsTrigger value="plans">Plans</TabsTrigger>
+            <TabsTrigger value="features">Manage Features</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
           
           <TabsContent value="plans" className="mt-6">
-            {/* Feature Management */}
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle>Manage Features</CardTitle>
-                <CardDescription>Features will be available across all plans</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-2 mb-4">
-                  <Input 
-                    placeholder="Add a new feature (e.g., API Access, Support)"
-                    value={newFeature}
-                    onChange={(e) => setNewFeature(e.target.value)}
-                    className="flex-grow"
-                  />
-                  <Button 
-                    onClick={addFeatureToAllPlans}
-                    disabled={!newFeature.trim()}
-                    className="flex-shrink-0"
-                  >
-                    <Plus size={16} className="mr-1" /> Add
-                  </Button>
-                </div>
-                
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium mb-2">Current Features:</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {sharedFeatures.map((feature, idx) => (
-                      <Badge key={idx} variant="secondary" className="text-xs px-2 py-1 flex items-center gap-1">
-                        {feature}
-                        <button 
-                          onClick={() => removeFeature(feature)} 
-                          className="ml-1 hover:text-red-500 transition-colors"
-                        >
-                          <X size={12} />
-                        </button>
-                      </Badge>
-                    ))}
-                    {sharedFeatures.length === 0 && (
-                      <p className="text-sm text-gray-500">No features added yet</p>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
             {/* Plans Grid */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {plans.map((plan, planIndex) => (
@@ -363,6 +387,7 @@ const PricingModel = () => {
                         size="icon" 
                         className="h-8 w-8 text-gray-500"
                         onClick={() => setSelectedPlanIndex(planIndex === selectedPlanIndex ? null : planIndex)}
+                        title="Plan Settings"
                       >
                         <Settings2 size={16} />
                       </Button>
@@ -417,57 +442,27 @@ const PricingModel = () => {
                       )}
                     </div>
                     
-                    {/* Trial Info */}
-                    <div className="flex items-center gap-2 mt-2">
-                      <div className="flex items-center gap-1">
-                        <input 
-                          type="checkbox"
-                          id={`trial-${planIndex}`}
-                          checked={plan.trialAvailable || false}
-                          onChange={(e) => updatePlan(planIndex, 'trialAvailable', e.target.checked)}
-                          className="rounded border-gray-300"
-                        />
-                        <label htmlFor={`trial-${planIndex}`} className="text-sm">Trial</label>
-                      </div>
-                      
-                      {plan.trialAvailable && (
-                        <div className="flex items-center gap-1">
-                          <Input
-                            type="number"
-                            value={plan.trialDays || 14}
-                            onChange={(e) => updatePlan(planIndex, 'trialDays', parseInt(e.target.value))}
-                            className="w-16 h-7 text-sm"
-                            min={1}
-                          />
-                          <span className="text-sm">days</span>
+                    {/* Analytics Card */}
+                    <Card className="mt-4 border-gray-200">
+                      <CardContent className="p-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-xs text-gray-500">Customers</p>
+                            <p className="text-lg font-semibold">{analytics.customersPerPlan[planIndex] || 0}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Monthly Revenue</p>
+                            <p className="text-lg font-semibold">
+                              ${plan.monthlyRevenue?.toLocaleString() || 0}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Churn Rate</p>
+                            <p className="text-sm text-gray-500">Coming soon</p>
+                          </div>
                         </div>
-                      )}
-                    </div>
-                    
-                    {/* Default plan on cancel */}
-                    <div className="flex items-center gap-2 mt-2">
-                      <input 
-                        type="radio"
-                        id={`default-${planIndex}`}
-                        checked={plan.defaultOnCancel || false}
-                        onChange={() => setDefaultOnCancelPlan(planIndex)}
-                        className="rounded border-gray-300"
-                        name="default-plan"
-                      />
-                      <label htmlFor={`default-${planIndex}`} className="text-sm">Default plan on cancel</label>
-                    </div>
-                    
-                    {/* Analytics Summary */}
-                    <div className="mt-3 pt-3 border-t border-gray-100">
-                      <div className="flex justify-between items-center text-xs text-gray-500">
-                        <span>Customers: {analytics.customersPerPlan[planIndex] || 0}</span>
-                        <div className="flex items-center">
-                          <span className="flex items-center">
-                            Churn: <Badge variant="outline" className="ml-1 text-xs bg-gray-50">Coming soon</Badge>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   </CardHeader>
                   
                   <CardContent className="pt-0">
@@ -477,7 +472,41 @@ const PricingModel = () => {
                       planIndex={planIndex} 
                       features={plan.features} 
                       updateFeature={updateFeature}
+                      sharedFeatures={sharedFeatures}
+                      removeFeatureFromPlan={removeFeatureFromPlan}
+                      moveFeatureUp={moveFeatureUp}
+                      moveFeatureDown={moveFeatureDown}
                     />
+                    
+                    {/* Add feature to plan */}
+                    <div className="flex gap-2 mt-4">
+                      <Select
+                        onValueChange={(value) => addFeatureToPlan(planIndex, value)}
+                      >
+                        <SelectTrigger className="text-sm">
+                          <SelectValue placeholder="Add feature" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {sharedFeatures
+                            .filter(feature => !plan.features.some(f => f.name === feature))
+                            .map((feature, idx) => (
+                              <SelectItem key={idx} value={feature}>{feature}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {/* Trial and default plan settings */}
+                    {selectedPlanIndex === planIndex && (
+                      <div className="mt-4 pt-4 border-t border-gray-100">
+                        <PricingPlanSettings 
+                          plan={plan} 
+                          planIndex={planIndex}
+                          updatePlan={updatePlan}
+                          setDefaultOnCancelPlan={setDefaultOnCancelPlan}
+                        />
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}
@@ -499,6 +528,77 @@ const PricingModel = () => {
                 Save Changes
               </Button>
             </div>
+          </TabsContent>
+          
+          <TabsContent value="features" className="mt-6">
+            {/* Feature Management */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Manage Features</CardTitle>
+                <CardDescription>Features will be available across all plans</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2 mb-4">
+                  <Input 
+                    placeholder="Add a new feature (e.g., API Access, Support)"
+                    value={newFeature}
+                    onChange={(e) => setNewFeature(e.target.value)}
+                    className="flex-grow"
+                  />
+                  <Button 
+                    onClick={addFeatureToAllPlans}
+                    disabled={!newFeature.trim()}
+                    className="flex-shrink-0"
+                  >
+                    <Plus size={16} className="mr-1" /> Add
+                  </Button>
+                </div>
+                
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium mb-2">Current Features:</h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Feature Name</TableHead>
+                        <TableHead>Plans</TableHead>
+                        <TableHead className="w-[100px] text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {sharedFeatures.map((feature, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell className="font-medium">{feature}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-1 flex-wrap">
+                              {plans.filter(plan => plan.features.some(f => f.name === feature)).map((plan, i) => (
+                                <Badge key={i} variant="outline" className="text-xs">{plan.name}</Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeFeature(feature)}
+                              className="h-7 w-7 text-gray-500 hover:text-red-500"
+                            >
+                              <Trash2 size={14} />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {sharedFeatures.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={3} className="text-center py-4 text-gray-500">
+                            No features added yet
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
           
           <TabsContent value="analytics" className="mt-6">
