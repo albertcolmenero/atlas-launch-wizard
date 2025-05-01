@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Widgets from "./pages/Widgets";
 import Customers from "./pages/Customers";
 import Integrations from "./pages/Integrations";
+import PricingModel from "./pages/PricingModel";
 import NotFound from "./pages/NotFound";
 import OnboardingWizard from "./components/onboarding/OnboardingWizard";
 import SignUpScreen from "./components/onboarding/steps/SignUpStep";
@@ -54,7 +55,8 @@ const App = () => (
           <Route path="/widgets" element={<AppLayout><Widgets /></AppLayout>} />
           <Route path="/customers" element={<AppLayout><Customers /></AppLayout>} />
           <Route path="/integrations" element={<AppLayout><Integrations /></AppLayout>} />
-          <Route path="/pricing-model" element={<AppLayout><div>Pricing Model Page</div></AppLayout>} />
+          <Route path="/pricing-model" element={<AppLayout><PricingModel /></AppLayout>} />
+          <Route path="/settings" element={<AppLayout><div>Settings Page</div></AppLayout>} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
