@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -441,28 +440,6 @@ const PricingModel = () => {
                         <Badge>Contact Sales</Badge>
                       )}
                     </div>
-                    
-                    {/* Analytics Card */}
-                    <Card className="mt-4 border-gray-200">
-                      <CardContent className="p-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-xs text-gray-500">Customers</p>
-                            <p className="text-lg font-semibold">{analytics.customersPerPlan[planIndex] || 0}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500">Monthly Revenue</p>
-                            <p className="text-lg font-semibold">
-                              ${plan.monthlyRevenue?.toLocaleString() || 0}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500">Churn Rate</p>
-                            <p className="text-sm text-gray-500">Coming soon</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
                   </CardHeader>
                   
                   <CardContent className="pt-0">
@@ -507,6 +484,28 @@ const PricingModel = () => {
                         />
                       </div>
                     )}
+                    
+                    {/* Analytics Card - Moved to the bottom */}
+                    <Card className="mt-4 border-gray-200">
+                      <CardContent className="p-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-xs text-gray-500">Customers</p>
+                            <p className="text-lg font-semibold">{analytics.customersPerPlan[planIndex] || 0}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Monthly Revenue</p>
+                            <p className="text-lg font-semibold">
+                              ${plan.monthlyRevenue?.toLocaleString() || 0}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Churn Rate</p>
+                            <p className="text-sm text-gray-500">Coming soon</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </CardContent>
                 </Card>
               ))}
