@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Code, Copy, Palette, Check, Font } from "lucide-react";
+import { Code, Copy, Palette, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
@@ -168,7 +168,7 @@ Please set up all the necessary script tags and configuration.`;
                   
                   <FormItem>
                     <FormLabel className="flex items-center gap-2">
-                      <Font className="h-4 w-4" /> Font Family
+                      <Code className="h-4 w-4" /> Font Family
                     </FormLabel>
                     <FormControl>
                       <select
