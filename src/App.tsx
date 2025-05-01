@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Widgets from "./pages/Widgets";
+import Customers from "./pages/Customers";
 import NotFound from "./pages/NotFound";
 import OnboardingWizard from "./components/onboarding/OnboardingWizard";
 import SignUpScreen from "./components/onboarding/steps/SignUpStep";
@@ -50,6 +51,7 @@ const App = () => (
           {/* Authenticated routes with sidebar layout */}
           <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
           <Route path="/widgets" element={<AppLayout><Widgets /></AppLayout>} />
+          <Route path="/customers" element={<AppLayout><Customers /></AppLayout>} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
