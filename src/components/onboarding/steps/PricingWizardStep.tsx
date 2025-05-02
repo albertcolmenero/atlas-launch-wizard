@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -882,4 +883,240 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
                   if (hasPricingIssues) {
                     setAiRecommendStep("context");
                   } else if (hasPricingPage !== null) {
-                    setAiRecommendStep("
+                    setAiRecommendStep("pricing-check");
+                  } else {
+                    setAiRecommendStep("input");
+                  }
+                }}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+            </div>
+          </div>
+        );
+      
+      default:
+        return null;
+    }
+  };
+
+  // Render choice view
+  const renderChoiceView = () => {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-2xl font-semibold mb-6 text-center">How would you like to set up your pricing?</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <Card className="p-6 cursor-pointer hover:border-primary transition-all" onClick={() => setView("recommend")}>
+            <div className="flex items-start mb-4">
+              <div className="p-2 bg-primary/10 rounded-full mr-4">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Get AI Recommendations</h3>
+                <p className="text-sm text-gray-500">
+                  We'll analyze your product and suggest pricing models that work well for similar businesses.
+                </p>
+              </div>
+            </div>
+            <Button className="w-full">Get Recommendations</Button>
+          </Card>
+          
+          <Card className="p-6 cursor-pointer hover:border-primary transition-all" onClick={() => setView("manual")}>
+            <div className="flex items-start mb-4">
+              <div className="p-2 bg-primary/10 rounded-full mr-4">
+                <FileText className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Create Custom Pricing</h3>
+                <p className="text-sm text-gray-500">
+                  Set up your pricing structure manually with complete control over plans and features.
+                </p>
+              </div>
+            </div>
+            <Button className="w-full" variant="outline">Create Custom Plans</Button>
+          </Card>
+        </div>
+        
+        <div className="flex justify-between">
+          <Button variant="ghost" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  // Render manual pricing setup
+  const renderManualSetup = () => {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-semibold">Create Your Pricing Plans</h2>
+          <Button onClick={addNewPlan} size="sm">
+            <Plus className="h-4 w-4 mr-1" />
+            Add Plan
+          </Button>
+        </div>
+        
+        {/* Plans grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {plans.map((plan, planIndex) => (
+            <Card key={planIndex} className="p-4 relative">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="absolute right-2 top-2" 
+                onClick={() => removePlan(planIndex)}
+              >
+                <Trash2 className="h-4 w-4 text-gray-400 hover:text-red-500" />
+              </Button>
+              
+              {/* Plan name */}
+              <div className="mb-4">
+                <Label htmlFor={`plan-name-${planIndex}`}>Plan Name</Label>
+                <Input 
+                  id={`plan-name-${planIndex}`}
+                  value={plan.name} 
+                  onChange={(e) => updatePlan(planIndex, 'name', e.target.value)} 
+                  className="mt-1"
+                />
+              </div>
+              
+              {/* Plan type */}
+              <div className="mb-4">
+                <Label htmlFor={`plan-type-${planIndex}`}>Plan Type</Label>
+                <Select 
+                  value={plan.planType}
+                  onValueChange={(value) => updatePlanType(planIndex, value as "free" | "paid" | "custom")}
+                >
+                  <SelectTrigger id={`plan-type-${planIndex}`} className="mt-1">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">Free</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="custom">Custom/Enterprise</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Plan price - only shown for paid plans */}
+              {plan.planType === "paid" && (
+                <div className="mb-4">
+                  <Label htmlFor={`plan-price-${planIndex}`}>Price (USD)</Label>
+                  <div className="relative mt-1">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <Input 
+                      id={`plan-price-${planIndex}`}
+                      value={plan.price} 
+                      onChange={(e) => updatePlan(planIndex, 'price', e.target.value)} 
+                      className="pl-8"
+                      type="text"
+                      inputMode="decimal"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* Features */}
+              <div>
+                <Label className="mb-2 block">Features</Label>
+                <div className="space-y-3">
+                  {plan.features.map((feature, featureIndex) => (
+                    <div key={featureIndex} className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <div className="flex items-center">
+                          <span className="text-sm">{feature.name}</span>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-7 w-7">
+                                <Trash2 className="h-3.5 w-3.5 text-gray-400" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-2">
+                              <Button size="sm" onClick={() => removeFeature(planIndex, featureIndex)}>Confirm</Button>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 mt-1">
+                          <Select 
+                            value={feature.type} 
+                            onValueChange={(value) => updateFeature(planIndex, featureIndex, 'type', value)}
+                          >
+                            <SelectTrigger className="h-7 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="boolean">Included</SelectItem>
+                              <SelectItem value="limit">Limited</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          
+                          {feature.type === 'limit' && (
+                            <Input 
+                              value={feature.limit || ""}
+                              onChange={(e) => updateFeature(planIndex, featureIndex, 'limit', e.target.value)}
+                              className="h-7 text-xs"
+                              placeholder="Limit"
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+        
+        {/* Add feature section */}
+        <Card className="p-4 mb-8">
+          <h3 className="font-semibold mb-4">Add Feature to All Plans</h3>
+          <div className="flex gap-2">
+            <Input 
+              placeholder="New feature name" 
+              value={newFeature} 
+              onChange={(e) => setNewFeature(e.target.value)}
+              className="flex-1"
+            />
+            <Button onClick={addFeatureToAllPlans} disabled={!newFeature.trim()}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add
+            </Button>
+          </div>
+        </Card>
+        
+        <div className="flex justify-between">
+          <Button variant="ghost" onClick={() => setView("choice")}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <Button onClick={handleManualSave}>Save and Continue</Button>
+        </div>
+      </div>
+    );
+  };
+
+  // Render content based on current view
+  const renderContent = () => {
+    switch (view) {
+      case "choice":
+        return renderChoiceView();
+      case "recommend":
+        return renderAIRecommendationFlow();
+      case "manual":
+        return renderManualSetup();
+      default:
+        return null;
+    }
+  };
+
+  return <div>{renderContent()}</div>;
+};
+
+export default PricingWizardStep;
