@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Plus, Trash2, Check, X, Sparkles } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Check, X, Sparkles, FileText, Upload, Globe, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/hooks/use-toast";
 
 type PricingWizardStepProps = {
   onNext: () => void;
@@ -28,16 +30,34 @@ type FeatureType = {
   limit?: string;
 };
 
+// Input options for AI recommendations
+type InputMethod = "url" | "document" | "text" | null;
+type AIRecommendStep = "input" | "processing" | "pricing-check" | "feedback" | "context" | "recommendations";
+
 const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: PricingWizardStepProps) => {
+  // Basic view management
   const [view, setView] = useState<"choice" | "recommend" | "manual">("choice");
-  const [currentRecommendStep, setCurrentRecommendStep] = useState(0);
   
-  // Fields for recommendation flow
+  // Original fields for recommendation flow
+  const [currentRecommendStep, setCurrentRecommendStep] = useState(0);
   const [appType, setAppType] = useState("");
   const [customerType, setCustomerType] = useState("");
   const [valueMetric, setValueMetric] = useState("");
   
-  // Fields for manual flow
+  // New AI recommendation flow
+  const [aiRecommendStep, setAiRecommendStep] = useState<AIRecommendStep>("input");
+  const [selectedInputMethod, setSelectedInputMethod] = useState<InputMethod>(null);
+  const [urlInput, setUrlInput] = useState("");
+  const [textInput, setTextInput] = useState("");
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [hasPricingPage, setHasPricingPage] = useState<boolean | null>(null);
+  const [hasPricingIssues, setHasPricingIssues] = useState<boolean | null>(null);
+  const [feedbackContext, setFeedbackContext] = useState("");
+  const [selectedFeedbackTags, setSelectedFeedbackTags] = useState<string[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Manual pricing plan fields
   const [plans, setPlans] = useState<PlanType[]>([
     {
       name: "Basic",
@@ -96,11 +116,185 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
     }
   ];
 
+  // AI-generated pricing models based on user input
+  const [aiGeneratedPlans, setAiGeneratedPlans] = useState<{
+    modelName: string;
+    description: string;
+    plans: PlanType[];
+  }[]>([]);
+
+  // Faux feedback tags for quick selection
+  const feedbackTags = [
+    "Too expensive", 
+    "Too complex", 
+    "Not competitive", 
+    "Missing features", 
+    "Need free tier",
+    "Wrong value metric"
+  ];
+
+  // File upload handling
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setUploadedFile(file);
+  };
+
+  // Toggle feedback tags
+  const toggleFeedbackTag = (tag: string) => {
+    setSelectedFeedbackTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag) 
+        : [...prev, tag]
+    );
+  };
+
+  // Process the input and move to the next AI recommendation step
+  const processInput = () => {
+    if (!selectedInputMethod) {
+      toast({
+        title: "Input required",
+        description: "Please select an input method and provide the necessary information.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate the selected input method
+    if (
+      (selectedInputMethod === "url" && !urlInput) ||
+      (selectedInputMethod === "text" && !textInput) ||
+      (selectedInputMethod === "document" && !uploadedFile)
+    ) {
+      toast({
+        title: "Input required",
+        description: "Please complete your selected input method.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+    setAiRecommendStep("processing");
+
+    // Simulate processing with progress updates
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 15;
+      setProcessingProgress(Math.min(progress, 100));
+      
+      if (progress >= 100) {
+        clearInterval(interval);
+        
+        // Generate some AI plan options
+        setAiGeneratedPlans([
+          {
+            modelName: "SaaS Standard",
+            description: "A classic good-better-best model with a free tier to drive adoption",
+            plans: [
+              {
+                name: "Free",
+                price: "0",
+                planType: "free",
+                features: [
+                  { name: "Core Features", type: "boolean" },
+                  { name: "Users", type: "limit", limit: "2" },
+                  { name: "Projects", type: "limit", limit: "1" },
+                  { name: "Community Support", type: "boolean" },
+                ],
+              },
+              {
+                name: "Growth",
+                price: "49",
+                planType: "paid",
+                features: [
+                  { name: "Core Features", type: "boolean" },
+                  { name: "Users", type: "limit", limit: "10" },
+                  { name: "Projects", type: "limit", limit: "15" },
+                  { name: "Priority Support", type: "boolean" },
+                  { name: "API Access", type: "boolean" },
+                ],
+              },
+              {
+                name: "Scale",
+                price: "99",
+                planType: "paid",
+                features: [
+                  { name: "Core Features", type: "boolean" },
+                  { name: "Users", type: "limit", limit: "30" },
+                  { name: "Projects", type: "limit", limit: "Unlimited" },
+                  { name: "Priority Support", type: "boolean" },
+                  { name: "API Access", type: "boolean" },
+                  { name: "Advanced Analytics", type: "boolean" },
+                ],
+              }
+            ],
+          },
+          {
+            modelName: "Developer Focus",
+            description: "Optimized for technical users with usage-based pricing",
+            plans: [
+              {
+                name: "Developer",
+                price: "0",
+                planType: "free",
+                features: [
+                  { name: "Core API", type: "boolean" },
+                  { name: "API Calls", type: "limit", limit: "1,000/mo" },
+                  { name: "Projects", type: "limit", limit: "1" },
+                  { name: "Documentation", type: "boolean" },
+                ],
+              },
+              {
+                name: "Team",
+                price: "79",
+                planType: "paid",
+                features: [
+                  { name: "Full API Access", type: "boolean" },
+                  { name: "API Calls", type: "limit", limit: "50,000/mo" },
+                  { name: "Projects", type: "limit", limit: "10" },
+                  { name: "Email Support", type: "boolean" },
+                  { name: "Custom Domains", type: "boolean" },
+                ],
+              },
+              {
+                name: "Business",
+                price: "249",
+                planType: "paid",
+                features: [
+                  { name: "Full API Access", type: "boolean" },
+                  { name: "API Calls", type: "limit", limit: "500,000/mo" },
+                  { name: "Projects", type: "limit", limit: "Unlimited" },
+                  { name: "Priority Support", type: "boolean" },
+                  { name: "Custom Domains", type: "boolean" },
+                  { name: "SSO/SAML", type: "boolean" },
+                ],
+              }
+            ],
+          },
+        ]);
+        
+        setIsProcessing(false);
+        setAiRecommendStep("pricing-check");
+      }
+    }, 500);
+  };
+
+  // Functions for original implementation
   const handleRecommendationComplete = () => {
     updateUserData({
       pricingModel: {
         type: "recommended",
         plans: recommendedPlans,
+      },
+    });
+    onNext();
+  };
+
+  const handleAIRecommendationComplete = (selectedModel: number) => {
+    updateUserData({
+      pricingModel: {
+        type: "ai-recommended",
+        plans: aiGeneratedPlans[selectedModel].plans,
       },
     });
     onNext();
@@ -224,392 +418,468 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
     }
   };
 
-  const renderChoiceView = () => (
-    <div className="text-center py-10">
-      <h2 className="text-2xl font-bold mb-2">Set Up Your Pricing</h2>
-      <p className="text-gray-500 mb-8">Choose how to monetize your app</p>
-      
-      <div className="flex flex-col md:flex-row justify-center gap-6 mt-8">
-        <Card className="p-6 border-2 border-primary hover:shadow-lg transition-all cursor-pointer transform hover:-translate-y-1 w-full md:w-64" 
-              onClick={() => setView("recommend")}>
-          <div className="mb-4 flex justify-center">
-            <Sparkles className="h-12 w-12 text-primary" />
-          </div>
-          <h3 className="text-xl font-semibold mb-2 text-center">AI Recommendation</h3>
-          <p className="text-sm text-gray-500 text-center">Get AI-powered pricing suggestions based on your app type</p>
-          <Button className="w-full mt-4">Get Recommendations</Button>
-        </Card>
-        
-        <Card className="p-6 border-2 hover:shadow-lg transition-all cursor-pointer transform hover:-translate-y-1 w-full md:w-64" 
-              onClick={() => setView("manual")}>
-          <div className="mb-4 flex justify-center">
-            <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
-              <Plus className="h-8 w-8 text-gray-500" />
+  // Render the new AI recommendation flow
+  const renderAIRecommendationFlow = () => {
+    switch (aiRecommendStep) {
+      case "input":
+        return (
+          <div className="max-w-2xl mx-auto">
+            <h3 className="text-xl font-semibold mb-6">Tell us about your product</h3>
+            <p className="text-gray-500 mb-6">
+              We'll use this information to generate tailored pricing recommendations for your product.
+              Choose one method below that works best for you.
+            </p>
+
+            <div className="space-y-6">
+              {/* URL Input Option */}
+              <Card 
+                className={cn(
+                  "p-4 cursor-pointer transition-all",
+                  selectedInputMethod === "url" ? "border-2 border-primary bg-primary/5" : "hover:border-primary/40"
+                )}
+                onClick={() => setSelectedInputMethod("url")}
+              >
+                <div className="flex items-start space-x-4">
+                  <div className="bg-primary/10 p-3 rounded-full">
+                    <Globe className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium mb-2">Paste a URL of your website</h4>
+                    <p className="text-sm text-gray-500 mb-3">
+                      We'll analyze your website to understand your product and suggest pricing.
+                    </p>
+                    <Input
+                      placeholder="https://your-product.com"
+                      value={urlInput}
+                      onChange={(e) => setUrlInput(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      disabled={selectedInputMethod !== "url" && selectedInputMethod !== null}
+                      className={selectedInputMethod === "url" ? "border-primary" : ""}
+                    />
+                  </div>
+                </div>
+              </Card>
+
+              {/* Document Upload Option */}
+              <Card 
+                className={cn(
+                  "p-4 cursor-pointer transition-all",
+                  selectedInputMethod === "document" ? "border-2 border-primary bg-primary/5" : "hover:border-primary/40"
+                )}
+                onClick={() => setSelectedInputMethod("document")}
+              >
+                <div className="flex items-start space-x-4">
+                  <div className="bg-primary/10 p-3 rounded-full">
+                    <FileText className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium mb-2">Upload a document</h4>
+                    <p className="text-sm text-gray-500 mb-3">
+                      Upload a product spec, pitch deck, or description (PDF, DOC, etc.).
+                    </p>
+                    <div 
+                      className={cn(
+                        "border-2 border-dashed rounded-md p-4 text-center",
+                        selectedInputMethod === "document" ? "border-primary/50 bg-primary/5" : "border-gray-200",
+                        selectedInputMethod !== "document" && selectedInputMethod !== null ? "opacity-50" : ""
+                      )}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (selectedInputMethod === "document") {
+                          document.getElementById("file-upload")?.click();
+                        }
+                      }}
+                    >
+                      {uploadedFile ? (
+                        <div className="flex items-center justify-center space-x-2">
+                          <FileText className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{uploadedFile.name}</span>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setUploadedFile(null);
+                            }}
+                            disabled={selectedInputMethod !== "document"}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div>
+                          <Upload className="h-8 w-8 text-gray-400 mb-2 mx-auto" />
+                          <p className="text-sm">Click to upload or drag and drop</p>
+                          <p className="text-xs text-gray-500">PDF, DOC, DOCX up to 10MB</p>
+                        </div>
+                      )}
+                      <input
+                        id="file-upload"
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        className="hidden"
+                        onChange={handleFileChange}
+                        disabled={selectedInputMethod !== "document"}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Text Input Option */}
+              <Card 
+                className={cn(
+                  "p-4 cursor-pointer transition-all",
+                  selectedInputMethod === "text" ? "border-2 border-primary bg-primary/5" : "hover:border-primary/40"
+                )}
+                onClick={() => setSelectedInputMethod("text")}
+              >
+                <div className="flex items-start space-x-4">
+                  <div className="bg-primary/10 p-3 rounded-full">
+                    <FileText className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium mb-2">Describe your product in text</h4>
+                    <p className="text-sm text-gray-500 mb-3">
+                      Tell us about your product, target audience, and key features.
+                    </p>
+                    <Textarea
+                      placeholder="My product is a collaboration tool for design teams. It helps designers share feedback, manage versions, and collaborate in real-time. Our target audience is design teams at mid-size companies..."
+                      value={textInput}
+                      onChange={(e) => setTextInput(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      disabled={selectedInputMethod !== "text" && selectedInputMethod !== null}
+                      className={cn(
+                        "min-h-[120px]",
+                        selectedInputMethod === "text" ? "border-primary" : ""
+                      )}
+                    />
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            <div className="flex justify-between mt-8">
+              <Button variant="ghost" onClick={() => setView("choice")}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+              <Button onClick={processInput} disabled={!selectedInputMethod}>
+                Next
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
             </div>
           </div>
-          <h3 className="text-xl font-semibold mb-2 text-center">Custom Plans</h3>
-          <p className="text-sm text-gray-500 text-center">Create your own pricing tiers with custom features</p>
-          <Button className="w-full mt-4" variant="outline">Create Manually</Button>
-        </Card>
-      </div>
-    </div>
-  );
-
-  const renderRecommendView = () => {
-    const renderStep = () => {
-      switch (currentRecommendStep) {
-        case 0:
-          return (
-            <>
-              <h3 className="text-xl font-semibold mb-4">What type of app are you building?</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {[
-                  { value: "saas", label: "SaaS Application", icon: "💼" },
-                  { value: "content", label: "Content Platform", icon: "📱" },
-                  { value: "ecommerce", label: "E-commerce", icon: "🛒" },
-                  { value: "mobile", label: "Mobile App", icon: "📱" },
-                  { value: "other", label: "Other", icon: "✨" }
-                ].map(option => (
-                  <Card 
-                    key={option.value}
-                    className={cn(
-                      "p-4 cursor-pointer hover:border-primary transition-all",
-                      appType === option.value ? "border-2 border-primary bg-primary/5" : ""
-                    )}
-                    onClick={() => setAppType(option.value)}
-                  >
-                    <div className="text-2xl mb-2">{option.icon}</div>
-                    <div className="font-medium">{option.label}</div>
-                  </Card>
-                ))}
-              </div>
-              <Button className="mt-2" onClick={nextRecommendStep} disabled={!appType}>
-                Continue
-              </Button>
-            </>
-          );
-        case 1:
-          return (
-            <>
-              <h3 className="text-xl font-semibold mb-4">Who are your customers?</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {[
-                  { value: "business", label: "Businesses (B2B)", icon: "🏢" },
-                  { value: "consumer", label: "Consumers (B2C)", icon: "👤" },
-                  { value: "developer", label: "Developers", icon: "👩‍💻" },
-                  { value: "mixed", label: "Mixed audience", icon: "🌐" }
-                ].map(option => (
-                  <Card 
-                    key={option.value}
-                    className={cn(
-                      "p-4 cursor-pointer hover:border-primary transition-all",
-                      customerType === option.value ? "border-2 border-primary bg-primary/5" : ""
-                    )}
-                    onClick={() => setCustomerType(option.value)}
-                  >
-                    <div className="text-2xl mb-2">{option.icon}</div>
-                    <div className="font-medium">{option.label}</div>
-                  </Card>
-                ))}
-              </div>
-              <Button className="mt-2" onClick={nextRecommendStep} disabled={!customerType}>
-                Continue
-              </Button>
-            </>
-          );
-        case 2:
-          return (
-            <>
-              <h3 className="text-xl font-semibold mb-4">What's your key value metric?</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {[
-                  { value: "users", label: "Users", icon: "👥" },
-                  { value: "projects", label: "Projects", icon: "📁" },
-                  { value: "api", label: "API Calls", icon: "🔄" },
-                  { value: "storage", label: "Storage", icon: "💾" },
-                  { value: "other", label: "Other", icon: "✨" }
-                ].map(option => (
-                  <Card 
-                    key={option.value}
-                    className={cn(
-                      "p-4 cursor-pointer hover:border-primary transition-all",
-                      valueMetric === option.value ? "border-2 border-primary bg-primary/5" : ""
-                    )}
-                    onClick={() => setValueMetric(option.value)}
-                  >
-                    <div className="text-2xl mb-2">{option.icon}</div>
-                    <div className="font-medium">{option.label}</div>
-                  </Card>
-                ))}
-              </div>
-              <Button className="mt-2" onClick={nextRecommendStep} disabled={!valueMetric}>
-                Continue
-              </Button>
-            </>
-          );
-        case 3:
-          return (
-            <>
-              <h3 className="text-xl font-semibold mb-6">Recommended Pricing Structure</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {recommendedPlans.map((plan, idx) => (
-                  <Card key={idx} className={cn(
-                    "p-6 border relative overflow-hidden",
-                    idx === 1 ? "border-primary shadow-md" : ""
-                  )}>
-                    {idx === 1 && (
-                      <div className="absolute top-0 right-0 bg-primary text-white px-3 py-1 text-xs font-medium">
-                        RECOMMENDED
-                      </div>
-                    )}
-                    <h4 className="text-lg font-bold">{plan.name}</h4>
-                    <p className="text-3xl font-bold mt-2">${plan.price}<span className="text-sm font-normal text-gray-500">/month</span></p>
-                    <div className="mt-4 space-y-3">
-                      {plan.features.map((feature, fidx) => (
-                        <div key={fidx} className="flex items-center">
-                          <Check size={18} className="text-green-500 mr-2 shrink-0" />
-                          <span>
-                            {feature.type === "limit" ? `${feature.name}: ${feature.limit}` : feature.name}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-                ))}
-              </div>
-              <div className="mt-8 flex gap-3">
-                <Button onClick={handleRecommendationComplete} className="px-6">Use This Structure</Button>
-                <Button variant="outline" onClick={() => {
-                  // Convert recommended plans to the current format
-                  setPlans(recommendedPlans);
-                  setView("manual");
-                }}>
-                  Customize Plans
-                </Button>
-              </div>
-            </>
-          );
-        default:
-          return null;
-      }
-    };
-
-    return (
-      <div className="py-6">
-        <Button 
-          variant="ghost" 
-          className="mb-6" 
-          onClick={() => {
-            if (currentRecommendStep > 0) {
-              setCurrentRecommendStep(currentRecommendStep - 1);
-            } else {
-              setView("choice");
-            }
-          }}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-
-        <div className="max-w-2xl mx-auto">
-          {renderStep()}
-        </div>
-      </div>
-    );
-  };
-
-  const renderManualView = () => (
-    <div className="py-6">
-      <Button variant="ghost" className="mb-6" onClick={() => setView("choice")}>
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back
-      </Button>
-
-      <div className="max-w-5xl mx-auto">
-        <h3 className="text-xl font-semibold mb-6">Create Your Pricing Plans</h3>
+        );
         
-        {/* Feature Management */}
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
-          <h4 className="font-medium mb-2">Manage Features</h4>
-          <div className="flex gap-2">
-            <Input 
-              placeholder="Add a new feature (e.g., API Access, Support)"
-              value={newFeature}
-              onChange={(e) => setNewFeature(e.target.value)}
-              className="flex-grow"
-            />
-            <Button 
-              onClick={addFeatureToAllPlans}
-              disabled={!newFeature.trim()}
-              className="flex-shrink-0"
-            >
-              <Plus size={16} className="mr-1" /> Add Feature
-            </Button>
+      case "processing":
+        return (
+          <div className="max-w-md mx-auto text-center py-10">
+            <div className="mb-6">
+              <div className="h-12 w-12 rounded-full bg-primary/10 mx-auto flex items-center justify-center mb-4">
+                <Sparkles className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold">Analyzing your product</h3>
+              <p className="text-gray-500 mt-2">
+                We're processing your input to generate the best pricing recommendations.
+              </p>
+            </div>
+            
+            <div className="space-y-6 mb-8">
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Analyzing product information</span>
+                  <span>{Math.min(processingProgress, 30)}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-primary rounded-full h-2 transition-all duration-500" 
+                    style={{ width: `${Math.min(processingProgress, 30)}%` }}
+                  ></div>
+                </div>
+              </div>
+              
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Finding similar companies</span>
+                  <span>{Math.max(0, Math.min(processingProgress - 30, 40))}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-primary rounded-full h-2 transition-all duration-500" 
+                    style={{ width: `${Math.max(0, Math.min((processingProgress - 30) * (40/30), 40))}%` }}
+                  ></div>
+                </div>
+              </div>
+              
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Generating recommendations</span>
+                  <span>{Math.max(0, Math.min(processingProgress - 70, 30))}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-primary rounded-full h-2 transition-all duration-500" 
+                    style={{ width: `${Math.max(0, Math.min((processingProgress - 70) * (30/30), 30))}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+            
+            <p className="text-sm text-gray-500 italic">This usually takes about 15 seconds</p>
           </div>
-          <div className="mt-2 text-xs text-gray-500">
-            Features will be added to all plans. You can customize limits per plan below.
-          </div>
-        </div>
+        );
         
-        {/* Plans Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {plans.map((plan, planIndex) => (
-            <Card key={planIndex} className="p-4 relative">
+      case "pricing-check":
+        return (
+          <div className="max-w-lg mx-auto">
+            <h3 className="text-xl font-semibold mb-6">Do you have an existing pricing page?</h3>
+            <p className="text-gray-500 mb-6">
+              Let us know if you already have a pricing structure that we can improve upon.
+            </p>
+            
+            <div className="flex gap-4">
               <Button 
-                variant="ghost" 
-                size="icon" 
-                className="absolute top-2 right-2 h-8 w-8 text-gray-500 hover:text-red-500"
-                onClick={() => removePlan(planIndex)}
-                disabled={plans.length === 1}
+                variant="outline" 
+                size="lg" 
+                className={cn(
+                  "flex-1 h-20 text-left p-4",
+                  hasPricingPage === true ? "border-2 border-primary" : ""
+                )}
+                onClick={() => {
+                  setHasPricingPage(true);
+                  setAiRecommendStep("feedback");
+                }}
               >
-                <Trash2 size={16} />
+                <div>
+                  <div className="font-medium text-base mb-1">Yes</div>
+                  <div className="text-sm text-gray-500">I already have pricing</div>
+                </div>
               </Button>
               
-              <div className="mb-4">
-                <Label htmlFor={`plan-name-${planIndex}`}>Plan Name</Label>
-                <Input
-                  id={`plan-name-${planIndex}`}
-                  placeholder="e.g., Basic, Pro, Enterprise"
-                  value={plan.name}
-                  onChange={(e) => updatePlan(planIndex, 'name', e.target.value)}
-                  className="mt-1"
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className={cn(
+                  "flex-1 h-20 text-left p-4",
+                  hasPricingPage === false ? "border-2 border-primary" : ""
+                )}
+                onClick={() => {
+                  setHasPricingPage(false);
+                  setAiRecommendStep("recommendations");
+                }}
+              >
+                <div>
+                  <div className="font-medium text-base mb-1">No</div>
+                  <div className="text-sm text-gray-500">I need pricing recommendations</div>
+                </div>
+              </Button>
+            </div>
+            
+            <div className="flex justify-between mt-8">
+              <Button variant="ghost" onClick={() => setAiRecommendStep("input")}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+            </div>
+          </div>
+        );
+        
+      case "feedback":
+        return (
+          <div className="max-w-lg mx-auto">
+            <h3 className="text-xl font-semibold mb-6">
+              Is there anything wrong with your current pricing page?
+            </h3>
+            <p className="text-gray-500 mb-6">
+              Your feedback will help us generate more tailored recommendations.
+            </p>
+            
+            <div className="flex gap-4 mb-6">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className={cn(
+                  "flex-1 h-20 text-left p-4",
+                  hasPricingIssues === true ? "border-2 border-primary" : ""
+                )}
+                onClick={() => {
+                  setHasPricingIssues(true);
+                  setAiRecommendStep("context");
+                }}
+              >
+                <div>
+                  <div className="font-medium text-base mb-1">Yes</div>
+                  <div className="text-sm text-gray-500">There are issues I'd like to address</div>
+                </div>
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className={cn(
+                  "flex-1 h-20 text-left p-4",
+                  hasPricingIssues === false ? "border-2 border-primary" : ""
+                )}
+                onClick={() => {
+                  setHasPricingIssues(false);
+                  setAiRecommendStep("recommendations");
+                }}
+              >
+                <div>
+                  <div className="font-medium text-base mb-1">No</div>
+                  <div className="text-sm text-gray-500">But I'd still like suggestions</div>
+                </div>
+              </Button>
+            </div>
+            
+            <div className="flex justify-between mt-8">
+              <Button variant="ghost" onClick={() => setAiRecommendStep("pricing-check")}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+            </div>
+          </div>
+        );
+        
+      case "context":
+        return (
+          <div className="max-w-lg mx-auto">
+            <h3 className="text-xl font-semibold mb-6">
+              Tell us about your pricing issues
+            </h3>
+            <p className="text-gray-500 mb-6">
+              This will help us tailor recommendations specific to your needs.
+            </p>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="feedback-context">Describe the issues or what you'd like to improve</Label>
+                <Textarea
+                  id="feedback-context"
+                  placeholder="Our current pricing doesn't convert well. We think our prices might be too high for our target audience..."
+                  className="mt-2 min-h-[120px]"
+                  value={feedbackContext}
+                  onChange={(e) => setFeedbackContext(e.target.value)}
                 />
               </div>
               
-              <div className="mb-4">
-                <Label htmlFor={`plan-type-${planIndex}`}>Plan Type</Label>
-                <Select 
-                  value={plan.planType} 
-                  onValueChange={(value: "free" | "paid" | "custom") => updatePlanType(planIndex, value)}
-                >
-                  <SelectTrigger id={`plan-type-${planIndex}`} className="mt-1">
-                    <SelectValue placeholder="Select plan type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="free">Free</SelectItem>
-                    <SelectItem value="paid">Paid</SelectItem>
-                    <SelectItem value="custom">Custom (Contact Sales)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {plan.planType === "paid" && (
-                <div className="mb-4">
-                  <Label htmlFor={`plan-price-${planIndex}`}>Price ($)</Label>
-                  <Input
-                    id={`plan-price-${planIndex}`}
-                    type="number"
-                    placeholder="e.g., 29"
-                    value={plan.price}
-                    onChange={(e) => updatePlan(planIndex, 'price', e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-              )}
-              
               <div>
-                <Label className="mb-1 block">Features</Label>
-                <div className="space-y-3 max-h-[300px] overflow-y-auto p-1">
-                  {plan.features.map((feature, featureIndex) => (
-                    <div key={featureIndex} className="flex items-center gap-2 bg-gray-50 p-3 rounded-md">
-                      <div className="flex-grow overflow-hidden">
-                        <div className="text-sm font-medium truncate">{feature.name}</div>
-                        
-                        <div className="flex items-center mt-1 gap-2">
-                          <Select 
-                            value={feature.type} 
-                            onValueChange={(value: "boolean" | "limit") => updateFeature(planIndex, featureIndex, 'type', value)}
-                          >
-                            <SelectTrigger className="h-7 text-xs px-2 w-[90px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="boolean">Included</SelectItem>
-                              <SelectItem value="limit">Limited</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          
-                          {feature.type === "limit" && (
-                            <Input
-                              type="text"
-                              placeholder="Limit"
-                              value={feature.limit}
-                              onChange={(e) => updateFeature(planIndex, featureIndex, 'limit', e.target.value)}
-                              className="h-7 text-xs w-[90px]"
-                            />
-                          )}
-                        </div>
-                      </div>
-                      
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        className="h-6 w-6 shrink-0 text-gray-400 hover:text-red-500"
-                        onClick={() => removeFeature(planIndex, featureIndex)}
-                      >
-                        <X size={14} />
-                      </Button>
+                <Label className="mb-2 block">Quick tags (optional)</Label>
+                <div className="flex flex-wrap gap-2">
+                  {feedbackTags.map((tag, index) => (
+                    <div
+                      key={index}
+                      onClick={() => toggleFeedbackTag(tag)}
+                      className={cn(
+                        "px-3 py-1 rounded-md text-sm cursor-pointer transition-all",
+                        selectedFeedbackTags.includes(tag)
+                          ? "bg-primary text-white"
+                          : "bg-gray-100 hover:bg-gray-200"
+                      )}
+                    >
+                      {tag}
                     </div>
                   ))}
                 </div>
               </div>
-            </Card>
-          ))}
-          
-          {/* Add Plan Card */}
-          <div 
-            className="border-2 border-dashed rounded-lg flex items-center justify-center h-[350px] cursor-pointer hover:bg-gray-50 transition-colors"
-            onClick={addNewPlan}
-          >
-            <div className="text-center">
-              <Plus size={32} className="mx-auto mb-2 text-gray-400" />
-              <div className="text-sm font-medium">Add Plan</div>
+            </div>
+            
+            <div className="flex justify-between mt-8">
+              <Button variant="ghost" onClick={() => setAiRecommendStep("feedback")}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+              <Button 
+                onClick={() => setAiRecommendStep("recommendations")}
+                disabled={!feedbackContext && selectedFeedbackTags.length === 0}
+              >
+                Generate Recommendations
+              </Button>
             </div>
           </div>
-        </div>
+        );
         
-        <div className="flex flex-col gap-4 items-center">
-          <Button 
-            className="w-full md:w-auto" 
-            onClick={handleManualSave} 
-            disabled={!plans.length || !plans.every(p => p.name)}
-          >
-            Save Plans
-          </Button>
-          
-          <a 
-            href="#" 
-            onClick={(e) => {
-              e.preventDefault();
-              window.open('mailto:sales@example.com?subject=Enterprise%20Pricing%20Inquiry', '_blank');
-            }}
-            className="text-primary hover:underline text-sm"
-          >
-            Do you have more sophisticated needs? Let's talk
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-
-  let content;
-  switch (view) {
-    case "choice":
-      content = renderChoiceView();
-      break;
-    case "recommend":
-      content = renderRecommendView();
-      break;
-    case "manual":
-      content = renderManualView();
-      break;
-  }
-
-  return (
-    <div className="bg-white rounded-lg">
-      {content}
-    </div>
-  );
-};
-
-export default PricingWizardStep;
+      case "recommendations":
+        return (
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-xl font-semibold mb-2">Recommended Pricing Models</h3>
+            <p className="text-gray-500 mb-6">
+              Based on your input, here are pricing models that might work well for your product.
+            </p>
+            
+            <div className="grid grid-cols-1 gap-6 mb-8">
+              {aiGeneratedPlans.map((modelOption, modelIndex) => (
+                <Card key={modelIndex} className="p-6 border">
+                  <div className="mb-4">
+                    <h4 className="text-lg font-bold">{modelOption.modelName}</h4>
+                    <p className="text-gray-500">{modelOption.description}</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    {modelOption.plans.map((plan, planIndex) => (
+                      <div 
+                        key={planIndex} 
+                        className={cn(
+                          "p-4 rounded-md",
+                          planIndex === 1 ? "bg-primary/5 border border-primary/20" : "bg-gray-50"
+                        )}
+                      >
+                        <h5 className="font-semibold text-lg">{plan.name}</h5>
+                        <div className="my-2">
+                          {plan.planType === "custom" ? (
+                            <span className="text-xl font-bold text-gray-700">Custom</span>
+                          ) : (
+                            <span>
+                              <span className="text-xl font-bold">${plan.price}</span>
+                              <span className="text-sm text-gray-500">/mo</span>
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2 mt-4">
+                          {plan.features.map((feature, featureIndex) => (
+                            <div key={featureIndex} className="flex items-center">
+                              <Check size={16} className="text-green-500 mr-2 shrink-0" />
+                              <span className="text-sm">
+                                {feature.type === "limit" 
+                                  ? `${feature.name}: ${feature.limit}` 
+                                  : feature.name
+                                }
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <Button 
+                      onClick={() => handleAIRecommendationComplete(modelIndex)}
+                      className="px-6"
+                    >
+                      Use This Model
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setPlans(modelOption.plans);
+                        setView("manual");
+                      }}
+                    >
+                      Customize
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+            
+            <div className="flex justify-between">
+              <Button 
+                variant="ghost" 
+                onClick={() => {
+                  if (hasPricingIssues) {
+                    setAiRecommendStep("context");
+                  } else if (hasPricingPage !== null) {
+                    setAiRecommendStep("
