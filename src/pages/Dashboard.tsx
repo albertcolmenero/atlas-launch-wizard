@@ -86,6 +86,19 @@ const Dashboard = () => {
     return `${date.toLocaleDateString()} at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   };
 
+  // Onboarding steps to display
+  const onboardingSteps = [
+    { name: "Create Pricing", completed: true },
+    { name: "SDK Integration", completed: userData.sdkIntegrated },
+    { name: "Pricing Page", completed: true },
+    { name: "Connect Stripe", completed: userData.stripeConnected }
+  ];
+
+  // Calculate onboarding progress
+  const completedSteps = onboardingSteps.filter(step => step.completed).length;
+  const totalSteps = onboardingSteps.length;
+  const progressPercentage = (completedSteps / totalSteps) * 100;
+
   return (
     <div className="p-6 space-y-6">
       {/* 1. Personalized Welcome Section */}
@@ -105,7 +118,60 @@ const Dashboard = () => {
         </div>
       </div>
       
-      {/* 2. Pricing Model Display */}
+      {/* 2. Onboarding Status */}
+      <Card className="p-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+          <div>
+            <h2 className="text-lg font-semibold">Onboarding Status</h2>
+            <p className="text-gray-500">
+              {completedSteps === totalSteps 
+                ? "All steps completed! Your app is fully set up."
+                : `${completedSteps} of ${totalSteps} steps completed`}
+            </p>
+          </div>
+          {completedSteps < totalSteps && (
+            <Button 
+              variant="outline"
+              size="sm"
+              className="mt-2 md:mt-0"
+              onClick={() => navigate("/onboarding")}
+            >
+              Continue Setup
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        
+        <Progress value={progressPercentage} className="h-2 mb-4" />
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          {onboardingSteps.map((step, index) => (
+            <Card key={index} className={`p-4 ${step.completed ? 'bg-primary/5 border-primary/20' : 'bg-gray-50'}`}>
+              <div className="flex items-start">
+                <div className={`p-2 rounded-full mr-3 ${
+                  step.completed ? "bg-green-100" : "bg-gray-200"
+                }`}>
+                  {step.completed ? (
+                    <Check size={16} className="text-green-600" />
+                  ) : (
+                    <span className="text-xs font-semibold w-4 h-4 flex items-center justify-center text-gray-500">
+                      {index + 1}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <p className="font-medium">{step.name}</p>
+                  <p className="text-xs text-gray-500">
+                    {step.completed ? "Completed" : "Pending"}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </Card>
+      
+      {/* 3. Pricing Model Display */}
       <Card className="p-6">
         <h2 className="text-lg font-semibold mb-4">Your Pricing Model</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -138,7 +204,7 @@ const Dashboard = () => {
         </div>
       </Card>
       
-      {/* 3. Business Health Metrics */}
+      {/* 4. Business Health Metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-2">
