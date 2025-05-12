@@ -66,7 +66,7 @@ const Dashboard = () => {
         }
       ]
     },
-    sdkIntegrated: true,
+    sdkIntegrated: false,
     stripeConnected: false,
     metrics: {
       mrr: 2450,
@@ -105,7 +105,7 @@ const Dashboard = () => {
     },
     { 
       name: "SDK Integration", 
-      completed: userData.sdkIntegrated,
+      completed: false,
       description: "Add the Atlas SDK to your application",
       helpVideo: "/videos/sdk-integration.mp4",
       codeSnippet: "npm install @atlas/sdk\n\n// In your app\nimport { Atlas } from '@atlas/sdk';\n\nconst atlas = new Atlas({\n  merchantId: \"" + userData.merchantId + "\",\n});",
@@ -113,7 +113,7 @@ const Dashboard = () => {
     },
     { 
       name: "Pricing Page", 
-      completed: true,
+      completed: false,
       description: "Embed the pricing page in your app",
       helpVideo: "/videos/pricing-page.mp4",
       codeSnippet: "import { AtlasPricingPage } from '@atlas/react';\n\nfunction YourPricingPage() {\n  return <AtlasPricingPage merchantId=\"" + userData.merchantId + "\" />;\n}",
@@ -121,7 +121,7 @@ const Dashboard = () => {
     },
     { 
       name: "Connect Stripe", 
-      completed: userData.stripeConnected,
+      completed: false,
       description: "Link your Stripe account to process payments",
       helpVideo: "/videos/stripe-connect.mp4",
       codeSnippet: "// No code needed, just connect your Stripe account\n// in the integrations section",
