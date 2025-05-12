@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { AlertCircle } from "lucide-react";
 import { 
   Check, 
   ArrowRight, 
@@ -15,8 +16,13 @@ import {
   FileText,
   MessageSquare,
   Calendar,
-  Bell
+  Bell,
+  Play,
+  Copy,
+  Sparkles
 } from "lucide-react";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
 
 // Properly define the PlanType with strict typing
 type PlanType = {
@@ -31,6 +37,7 @@ type PlanType = {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   // Mock user data that would typically come from context/storage
   const [userData, setUserData] = useState({
@@ -88,16 +95,54 @@ const Dashboard = () => {
 
   // Onboarding steps to display
   const onboardingSteps = [
-    { name: "Create Pricing", completed: true },
-    { name: "SDK Integration", completed: userData.sdkIntegrated },
-    { name: "Pricing Page", completed: true },
-    { name: "Connect Stripe", completed: userData.stripeConnected }
+    { 
+      name: "Create Pricing", 
+      completed: true,
+      description: "Set up your pricing tiers and features",
+      helpVideo: "/videos/pricing-setup.mp4",
+      codeSnippet: "// Your pricing is already set up!",
+      docLink: "/docs/pricing"
+    },
+    { 
+      name: "SDK Integration", 
+      completed: userData.sdkIntegrated,
+      description: "Add the Atlas SDK to your application",
+      helpVideo: "/videos/sdk-integration.mp4",
+      codeSnippet: "npm install @atlas/sdk\n\n// In your app\nimport { Atlas } from '@atlas/sdk';\n\nconst atlas = new Atlas({\n  merchantId: \"" + userData.merchantId + "\",\n});",
+      docLink: "/docs/sdk"
+    },
+    { 
+      name: "Pricing Page", 
+      completed: true,
+      description: "Embed the pricing page in your app",
+      helpVideo: "/videos/pricing-page.mp4",
+      codeSnippet: "import { AtlasPricingPage } from '@atlas/react';\n\nfunction YourPricingPage() {\n  return <AtlasPricingPage merchantId=\"" + userData.merchantId + "\" />;\n}",
+      docLink: "/docs/pricing-page"
+    },
+    { 
+      name: "Connect Stripe", 
+      completed: userData.stripeConnected,
+      description: "Link your Stripe account to process payments",
+      helpVideo: "/videos/stripe-connect.mp4",
+      codeSnippet: "// No code needed, just connect your Stripe account\n// in the integrations section",
+      docLink: "/docs/stripe"
+    }
   ];
 
   // Calculate onboarding progress
   const completedSteps = onboardingSteps.filter(step => step.completed).length;
   const totalSteps = onboardingSteps.length;
   const progressPercentage = (completedSteps / totalSteps) * 100;
+  const allStepsCompleted = completedSteps === totalSteps;
+
+  // Handle code copying
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    toast({
+      title: "Code copied",
+      description: "The code snippet has been copied to your clipboard."
+    });
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -118,20 +163,29 @@ const Dashboard = () => {
         </div>
       </div>
       
-      {/* 2. Onboarding Status */}
-      <Card className="p-6">
+      {/* 2. Enhanced Onboarding Status with Guided Experience */}
+      <Card className={`p-6 ${allStepsCompleted ? 'bg-green-50 border-green-200' : ''}`}>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
           <div>
-            <h2 className="text-lg font-semibold">Onboarding Status</h2>
-            <p className="text-gray-500">
-              {completedSteps === totalSteps 
-                ? "All steps completed! Your app is fully set up."
-                : `${completedSteps} of ${totalSteps} steps completed`}
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold">Onboarding Status</h2>
+              {allStepsCompleted && (
+                <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full flex items-center">
+                  <Check size={12} className="mr-1" />
+                  Complete
+                </span>
+              )}
+            </div>
+            <p className={`${allStepsCompleted ? 'text-green-600 font-medium' : 'text-gray-500'}`}>
+              {allStepsCompleted 
+                ? "🎉 All steps completed! Your app is fully set up and ready to monetize."
+                : `${completedSteps} of ${totalSteps} steps completed${completedSteps > 0 ? ` - ${totalSteps - completedSteps} steps left to start monetizing!` : ""}`}
             </p>
           </div>
-          {completedSteps < totalSteps && (
+          
+          {!allStepsCompleted && (
             <Button 
-              variant="outline"
+              variant="default"
               size="sm"
               className="mt-2 md:mt-0"
               onClick={() => navigate("/onboarding")}
@@ -142,33 +196,158 @@ const Dashboard = () => {
           )}
         </div>
         
-        <Progress value={progressPercentage} className="h-2 mb-4" />
+        <Progress value={progressPercentage} className={`h-2 mb-4 ${allStepsCompleted ? 'bg-green-100' : ''}`} />
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Onboarding Steps with Help Resources */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {onboardingSteps.map((step, index) => (
-            <Card key={index} className={`p-4 ${step.completed ? 'bg-primary/5 border-primary/20' : 'bg-gray-50'}`}>
-              <div className="flex items-start">
-                <div className={`p-2 rounded-full mr-3 ${
-                  step.completed ? "bg-green-100" : "bg-gray-200"
-                }`}>
-                  {step.completed ? (
-                    <Check size={16} className="text-green-600" />
-                  ) : (
-                    <span className="text-xs font-semibold w-4 h-4 flex items-center justify-center text-gray-500">
-                      {index + 1}
-                    </span>
-                  )}
+            <Card 
+              key={index} 
+              className={`overflow-hidden transition-all hover:shadow-md ${
+                step.completed 
+                  ? 'bg-primary/5 border-primary/20' 
+                  : 'bg-gray-50'
+              }`}
+            >
+              <div className="p-4">
+                <div className="flex items-start">
+                  <div className={`p-2 rounded-full mr-3 ${
+                    step.completed ? "bg-green-100" : "bg-gray-200"
+                  }`}>
+                    {step.completed ? (
+                      <Check size={16} className="text-green-600" />
+                    ) : (
+                      <span className="text-xs font-semibold w-4 h-4 flex items-center justify-center text-gray-500">
+                        {index + 1}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-medium">{step.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {step.completed ? "Completed" : step.description}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium">{step.name}</p>
-                  <p className="text-xs text-gray-500">
-                    {step.completed ? "Completed" : "Pending"}
-                  </p>
-                </div>
+
+                {!step.completed && (
+                  <>
+                    <div className="mt-4 border-t pt-3">
+                      <Tabs defaultValue="code">
+                        <TabsList className="mb-2">
+                          <TabsTrigger value="code" className="text-xs">
+                            <Code className="h-3 w-3 mr-1" />
+                            Code
+                          </TabsTrigger>
+                          <TabsTrigger value="help" className="text-xs">
+                            <Play className="h-3 w-3 mr-1" />
+                            Help
+                          </TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="code">
+                          <div className="relative bg-gray-900 rounded-md p-2">
+                            <pre className="text-xs text-gray-200 whitespace-pre-wrap max-h-24 overflow-y-auto">
+                              {step.codeSnippet}
+                            </pre>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="absolute top-1 right-1 h-6 w-6 text-gray-400 hover:text-white"
+                              onClick={() => handleCopyCode(step.codeSnippet)}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </TabsContent>
+                        <TabsContent value="help">
+                          <div className="text-xs flex flex-col gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-7 w-full justify-start text-xs"
+                              onClick={() => navigate("/onboarding")}
+                            >
+                              <Play className="h-3 w-3 mr-1.5" />
+                              Watch quick tutorial
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-7 w-full justify-start text-xs"
+                              onClick={() => window.open(step.docLink, "_blank")}
+                            >
+                              <FileText className="h-3 w-3 mr-1.5" />
+                              View documentation
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-7 w-full justify-start text-xs bg-primary/5"
+                            >
+                              <MessageSquare className="h-3 w-3 mr-1.5" />
+                              Chat with support
+                            </Button>
+                          </div>
+                        </TabsContent>
+                      </Tabs>
+                    </div>
+
+                    <div className="mt-3 flex justify-end">
+                      <Button 
+                        variant="link" 
+                        size="sm" 
+                        className="h-6 px-0 text-primary text-xs font-medium"
+                        onClick={() => navigate("/onboarding")}
+                      >
+                        Complete this step
+                        <ArrowRight className="ml-1 h-3 w-3" />
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             </Card>
           ))}
         </div>
+
+        {/* Limited Access Warning */}
+        {!allStepsCompleted && (
+          <Alert className="mt-4 bg-amber-50 border-amber-200">
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+            <AlertTitle className="text-amber-800">Limited dashboard access</AlertTitle>
+            <AlertDescription className="text-amber-700">
+              Complete all steps to unlock full features. You can explore the dashboard in preview mode.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Celebration Banner */}
+        {allStepsCompleted && (
+          <div className="mt-4 bg-gradient-to-r from-green-100 via-cyan-100 to-blue-100 p-4 rounded-lg border border-green-200 text-center">
+            <div className="flex justify-center mb-2">
+              <Sparkles className="h-6 w-6 text-green-600" />
+            </div>
+            <h3 className="text-lg font-bold text-green-800">You're ready to monetize!</h3>
+            <p className="text-green-700 mb-3">Your Atlas integration is complete. You can now start managing subscriptions and generating revenue.</p>
+            <div className="flex justify-center gap-2">
+              <Button 
+                size="sm"
+                onClick={() => navigate("/customers")}
+              >
+                <Users className="mr-2 h-4 w-4" />
+                Manage Customers
+              </Button>
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/integrations")}
+              >
+                <CreditCard className="mr-2 h-4 w-4" />
+                Stripe Dashboard
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
       
       {/* 3. Pricing Model Display */}
