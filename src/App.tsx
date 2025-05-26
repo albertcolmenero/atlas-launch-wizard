@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import DevelopmentDashboard from "./pages/DevelopmentDashboard";
 import DevelopmentGatedDashboard from "./pages/DevelopmentGatedDashboard";
+import ProductionGatedDashboard from "./pages/ProductionGatedDashboard";
 import Widgets from "./pages/Widgets";
 import Customers from "./pages/Customers";
 import Integrations from "./pages/Integrations";
