@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
+import DevelopmentDashboard from "./pages/DevelopmentDashboard";
 import Widgets from "./pages/Widgets";
 import Customers from "./pages/Customers";
 import Integrations from "./pages/Integrations";
@@ -49,6 +50,9 @@ const App = () => (
           {/* Auth routes */}
           <Route path="/signup" element={<SignUpScreen />} />
           <Route path="/onboarding" element={<OnboardingWizard />} />
+          
+          {/* Development dashboard - gated after onboarding */}
+          <Route path="/development-dashboard" element={<DevelopmentDashboard />} />
           
           {/* Authenticated routes with sidebar layout */}
           <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />

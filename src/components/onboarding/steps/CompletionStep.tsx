@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check } from "lucide-react";
@@ -121,8 +120,8 @@ const CompletionStep = ({ userData }: CompletionStepProps) => {
       )}
       
       <div className="space-y-4 text-center">
-        <Button size="lg" className="w-full" onClick={() => navigate("/dashboard")}>
-          Go to Dashboard
+        <Button size="lg" className="w-full" onClick={() => navigate("/development-dashboard")}>
+          Continue to Development Dashboard
         </Button>
         <div className="text-sm">
           <a href="#" className="text-primary hover:underline">
