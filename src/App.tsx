@@ -51,8 +51,8 @@ const App = () => (
           <Route path="/signup" element={<SignUpScreen />} />
           <Route path="/onboarding" element={<OnboardingWizard />} />
           
-          {/* Development dashboard - gated after onboarding */}
-          <Route path="/development-dashboard" element={<DevelopmentDashboard />} />
+          {/* Development dashboard - gated after onboarding with sidebar */}
+          <Route path="/development-dashboard" element={<AppLayout><DevelopmentDashboard /></AppLayout>} />
           
           {/* Authenticated routes with sidebar layout */}
           <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
