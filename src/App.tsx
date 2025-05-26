@@ -56,6 +56,9 @@ const App = () => (
           {/* Development gated dashboard - for users who haven't completed setup */}
           <Route path="/development-gated-dashboard" element={<AppLayout><DevelopmentGatedDashboard /></AppLayout>} />
           
+          {/* Production gated dashboard - for users transitioning to production */}
+          <Route path="/production-gated-dashboard" element={<AppLayout><ProductionGatedDashboard /></AppLayout>} />
+          
           {/* Development dashboard - for users who completed setup with sidebar */}
           <Route path="/development-dashboard" element={<AppLayout><DevelopmentDashboard /></AppLayout>} />
           
