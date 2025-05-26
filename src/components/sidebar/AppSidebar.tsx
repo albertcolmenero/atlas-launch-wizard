@@ -51,7 +51,7 @@ export function AppSidebar() {
   const location = useLocation();
 
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
       <SidebarHeader className="p-6">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center">
@@ -90,6 +90,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton 
               asChild
+              tooltip="Log out"
               className="w-full justify-start"
             >
               <a href="/logout">
