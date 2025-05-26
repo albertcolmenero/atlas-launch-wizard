@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import DevelopmentDashboard from "./pages/DevelopmentDashboard";
+import DevelopmentGatedDashboard from "./pages/DevelopmentGatedDashboard";
 import Widgets from "./pages/Widgets";
 import Customers from "./pages/Customers";
 import Integrations from "./pages/Integrations";
@@ -51,7 +52,10 @@ const App = () => (
           <Route path="/signup" element={<SignUpScreen />} />
           <Route path="/onboarding" element={<OnboardingWizard />} />
           
-          {/* Development dashboard - gated after onboarding with sidebar */}
+          {/* Development gated dashboard - for users who haven't completed setup */}
+          <Route path="/development-gated-dashboard" element={<AppLayout><DevelopmentGatedDashboard /></AppLayout>} />
+          
+          {/* Development dashboard - for users who completed setup with sidebar */}
           <Route path="/development-dashboard" element={<AppLayout><DevelopmentDashboard /></AppLayout>} />
           
           {/* Authenticated routes with sidebar layout */}
