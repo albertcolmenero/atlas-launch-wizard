@@ -51,24 +51,7 @@ const ProductionDashboard = () => {
         <h2 className="text-2xl font-semibold text-gray-900 mb-6">What's Next</h2>
         
         {/* What's Next Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="relative">
-            <CardHeader className="text-center pb-4">
-              <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Check className="h-8 w-8 text-green-600" />
-              </div>
-              <CardTitle className="text-lg font-semibold">What's Next 2: Embed Customer Portal</CardTitle>
-              <CardDescription className="text-sm text-gray-600">
-                ☑️ → ✅
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-center pt-0">
-              <Button size="sm" variant="outline" className="border-gray-300">
-                Configure
-              </Button>
-            </CardContent>
-          </Card>
-
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="relative">
             <CardHeader className="text-center pb-4">
               <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -91,7 +74,41 @@ const ProductionDashboard = () => {
               <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <Check className="h-8 w-8 text-green-600" />
               </div>
-              <CardTitle className="text-lg font-semibold">What's Next 3: Scale Your Business</CardTitle>
+              <CardTitle className="text-lg font-semibold">What's Next 2: Embed Customer Portal</CardTitle>
+              <CardDescription className="text-sm text-gray-600">
+                ☑️ → ✅
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center pt-0">
+              <Button size="sm" variant="outline" className="border-gray-300">
+                Configure
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="relative">
+            <CardHeader className="text-center pb-4">
+              <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Check className="h-8 w-8 text-blue-600" />
+              </div>
+              <CardTitle className="text-lg font-semibold">Mission 1: Get your first customer</CardTitle>
+              <CardDescription className="text-sm text-gray-600">
+                ☑️ → ✅
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center pt-0">
+              <Button size="sm" variant="outline" className="border-gray-300">
+                Track
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="relative">
+            <CardHeader className="text-center pb-4">
+              <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Check className="h-8 w-8 text-purple-600" />
+              </div>
+              <CardTitle className="text-lg font-semibold">Mission 2: Scale to $10K MRR</CardTitle>
               <CardDescription className="text-sm text-gray-600">
                 ☑️ → ✅
               </CardDescription>
