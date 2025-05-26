@@ -1,15 +1,16 @@
 
 import { useLocation } from "react-router-dom";
-import { LayoutDashboard, CircleDollarSign, Users, LayoutGrid, Link, Settings } from "lucide-react";
+import { LayoutDashboard, CircleDollarSign, Users, LayoutGrid, Link, Settings, LogOut } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarHeader,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
 
 // Menu items for the main navigation
@@ -20,7 +21,7 @@ const mainNavItems = [
     icon: LayoutDashboard,
   },
   {
-    title: "Pricing Model",
+    title: "Pricing model",
     path: "/pricing-model",
     icon: CircleDollarSign,
   },
@@ -51,9 +52,17 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
+      <SidebarHeader className="p-6">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center">
+            <span className="text-white font-bold text-sm">A</span>
+          </div>
+          <span className="font-bold text-lg">ATLAS</span>
+        </div>
+      </SidebarHeader>
+      
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainNavItems.map((item) => (
@@ -62,9 +71,10 @@ export function AppSidebar() {
                     asChild 
                     isActive={location.pathname === item.path}
                     tooltip={item.title}
+                    className="w-full justify-start px-6"
                   >
                     <a href={item.path}>
-                      <item.icon />
+                      <item.icon className="h-5 w-5" />
                       <span>{item.title}</span>
                     </a>
                   </SidebarMenuButton>
@@ -74,6 +84,22 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="p-6">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              asChild
+              className="w-full justify-start"
+            >
+              <a href="/logout">
+                <LogOut className="h-5 w-5" />
+                <span>Log out</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }
