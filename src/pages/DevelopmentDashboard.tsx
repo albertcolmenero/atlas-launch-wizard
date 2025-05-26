@@ -2,9 +2,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Users, DollarSign, ArrowUpRight, Shield, Palette, Rocket } from "lucide-react";
+import { TrendingUp, Users, DollarSign, ArrowUpRight, Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const DevelopmentDashboard = () => {
+  const navigate = useNavigate();
+  
   // Mock data - in a real app this would come from API
   const metrics = {
     mrr: 12450,
@@ -28,13 +31,17 @@ const DevelopmentDashboard = () => {
     return `${value > 0 ? '+' : ''}${value}%`;
   };
 
+  const handleGoProduction = () => {
+    navigate('/production-gated-dashboard');
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Header with Development Mode Indicator */}
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold text-gray-900">Development Dashboard</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
             <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-orange-200">
               Development
             </Badge>
@@ -45,35 +52,18 @@ const DevelopmentDashboard = () => {
 
       {/* Overview Section */}
       <div>
-        <h2 className="text-2xl font-semibold text-gray-900 mb-6">Overview</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-6">What's Next</h2>
         
         {/* What's Next Cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card className="relative">
             <CardHeader className="text-center pb-4">
-              <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Shield className="h-8 w-8 text-blue-600" />
+              <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Check className="h-8 w-8 text-green-600" />
               </div>
-              <CardTitle className="text-lg font-semibold">Secure your app's backend</CardTitle>
+              <CardTitle className="text-lg font-semibold">What's Next 2: Embed Customer Portal</CardTitle>
               <CardDescription className="text-sm text-gray-600">
-                Secure with industry grade protection
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-center pt-0">
-              <Button size="sm" variant="outline" className="border-gray-300">
-                Add Security
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="relative">
-            <CardHeader className="text-center pb-4">
-              <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Palette className="h-8 w-8 text-purple-600" />
-              </div>
-              <CardTitle className="text-lg font-semibold">Clerk UI Components</CardTitle>
-              <CardDescription className="text-sm text-gray-600">
-                Add fully customizable signup and sign in components
+                ☑️ → ✅
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center pt-0">
@@ -86,16 +76,38 @@ const DevelopmentDashboard = () => {
           <Card className="relative">
             <CardHeader className="text-center pb-4">
               <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Rocket className="h-8 w-8 text-green-600" />
+                <Check className="h-8 w-8 text-green-600" />
               </div>
-              <CardTitle className="text-lg font-semibold">Deploy your app to production</CardTitle>
+              <CardTitle className="text-lg font-semibold">What's Next 1: Feature flag your app</CardTitle>
               <CardDescription className="text-sm text-gray-600">
-                Take your app live to begin adding users
+                ☑️ → ✅
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center pt-0">
               <Button size="sm" variant="outline" className="border-gray-300">
-                Deploy
+                Configure
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="relative">
+            <CardHeader className="text-center pb-4">
+              <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Check className="h-8 w-8 text-green-600" />
+              </div>
+              <CardTitle className="text-lg font-semibold">What's Next 3: Go Production</CardTitle>
+              <CardDescription className="text-sm text-gray-600">
+                ☑️ → ✅
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center pt-0">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="border-gray-300"
+                onClick={handleGoProduction}
+              >
+                Go Production
               </Button>
             </CardContent>
           </Card>
