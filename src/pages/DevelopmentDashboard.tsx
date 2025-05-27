@@ -154,7 +154,7 @@ const DevelopmentDashboard = () => {
                 </div>
                 <div className="flex items-center text-sm text-green-600 mt-1">
                   <ArrowUpRight className="h-4 w-4 mr-1" />
-                  {formatPercentage(metrics.arrGrowth)} from last year
+                  {formatPercentage(metrics.arrGrowth)} from last month
                 </div>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
