@@ -56,14 +56,16 @@ const DevelopmentDashboard = () => {
         
         {/* What's Next Cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
+          
+
           <Card className="relative">
             <CardHeader className="text-center pb-4">
               <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <Check className="h-8 w-8 text-green-600" />
               </div>
-              <CardTitle className="text-lg font-semibold">What's Next 2: Embed Customer Portal</CardTitle>
+              <CardTitle className="text-lg font-semibold">What's Next 1: Feature flag your app</CardTitle>
               <CardDescription className="text-sm text-gray-600">
-                ☑️ → ✅
+                Gate your features based on your users' subscriptions1
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center pt-0">
@@ -78,9 +80,9 @@ const DevelopmentDashboard = () => {
               <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <Check className="h-8 w-8 text-green-600" />
               </div>
-              <CardTitle className="text-lg font-semibold">What's Next 1: Feature flag your app</CardTitle>
+              <CardTitle className="text-lg font-semibold">What's Next 2: Embed Customer Portal</CardTitle>
               <CardDescription className="text-sm text-gray-600">
-                ☑️ → ✅
+                Provide a comprehensive portal to your customers
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center pt-0">
@@ -97,7 +99,7 @@ const DevelopmentDashboard = () => {
               </div>
               <CardTitle className="text-lg font-semibold">What's Next 3: Go Production</CardTitle>
               <CardDescription className="text-sm text-gray-600">
-                ☑️ → ✅
+                Are you ready for prime time?
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center pt-0">
