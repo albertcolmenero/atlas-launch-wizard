@@ -72,12 +72,48 @@ const atlas = new Atlas({
 
       {/* Steps */}
       <div className="space-y-6">
-        {/* Step 1: Integrate SDK in Production */}
+        {/* Step 1: Integrate Stripe in production */}
         <Card className="border-l-4 border-l-gray-300">
           <CardContent className="p-6">
             <div className="flex items-start">
               <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mr-4 flex-shrink-0 text-gray-600 font-semibold">
                 1
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Integrate Stripe in production</h3>
+                <p className="text-gray-600 mb-4">
+                  Switch your Stripe integration to use live mode for processing real payments. Make sure to update 
+                  your webhook endpoints and use your live Stripe API keys.
+                </p>
+                
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-start">
+                    <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                      <span className="text-white text-xs font-bold">!</span>
+                    </div>
+                    <div>
+                      <p className="text-red-800 font-medium">Live Payments Warning</p>
+                      <p className="text-red-700 text-sm">
+                        You will be processing real payments. Test thoroughly and ensure your error handling is robust.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+                  Configure Production Stripe
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Step 2: Integrate SDK in Production */}
+        <Card className="border-l-4 border-l-gray-300">
+          <CardContent className="p-6">
+            <div className="flex items-start">
+              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mr-4 flex-shrink-0 text-gray-600 font-semibold">
+                2
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Integrate SDK in Production</h3>
@@ -141,42 +177,6 @@ const atlas = new Atlas({
                     </CardContent>
                   </Card>
                 </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Step 2: Integrate Stripe in production */}
-        <Card className="border-l-4 border-l-gray-300">
-          <CardContent className="p-6">
-            <div className="flex items-start">
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mr-4 flex-shrink-0 text-gray-600 font-semibold">
-                2
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Integrate Stripe in production</h3>
-                <p className="text-gray-600 mb-4">
-                  Switch your Stripe integration to use live mode for processing real payments. Make sure to update 
-                  your webhook endpoints and use your live Stripe API keys.
-                </p>
-                
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                  <div className="flex items-start">
-                    <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                      <span className="text-white text-xs font-bold">!</span>
-                    </div>
-                    <div>
-                      <p className="text-red-800 font-medium">Live Payments Warning</p>
-                      <p className="text-red-700 text-sm">
-                        You will be processing real payments. Test thoroughly and ensure your error handling is robust.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                
-                <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-                  Configure Production Stripe
-                </Button>
               </div>
             </div>
           </CardContent>
