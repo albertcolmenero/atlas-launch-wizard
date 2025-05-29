@@ -122,84 +122,81 @@ const ProductionDashboard = () => {
         </div>
       </div>
 
-      {/* Metrics and Activity Grid */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Left Column - Metrics Widgets */}
-        <div className="lg:col-span-2 grid md:grid-cols-2 gap-6">
-          {/* MRR Widget */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Monthly Recurring Revenue</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">
-                    {formatCurrency(metrics.mrr)}
-                  </div>
-                  <div className="flex items-center text-sm text-green-600 mt-1">
-                    <ArrowUpRight className="h-4 w-4 mr-1" />
-                    {formatPercentage(metrics.mrrGrowth)} from last month
-                  </div>
+      {/* Metrics Widgets */}
+      <div className="grid md:grid-cols-3 gap-6">
+        {/* MRR Widget */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Monthly Recurring Revenue</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {formatCurrency(metrics.mrr)}
                 </div>
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <DollarSign className="h-6 w-6 text-green-600" />
+                <div className="flex items-center text-sm text-green-600 mt-1">
+                  <ArrowUpRight className="h-4 w-4 mr-1" />
+                  {formatPercentage(metrics.mrrGrowth)} from last month
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <DollarSign className="h-6 w-6 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* ARR Widget */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Annual Recurring Revenue</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">
-                    {formatCurrency(metrics.arr)}
-                  </div>
-                  <div className="flex items-center text-sm text-green-600 mt-1">
-                    <ArrowUpRight className="h-4 w-4 mr-1" />
-                    {formatPercentage(metrics.arrGrowth)} from last year
-                  </div>
+        {/* ARR Widget */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Annual Recurring Revenue</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {formatCurrency(metrics.arr)}
                 </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <TrendingUp className="h-6 w-6 text-blue-600" />
+                <div className="flex items-center text-sm text-green-600 mt-1">
+                  <ArrowUpRight className="h-4 w-4 mr-1" />
+                  {formatPercentage(metrics.arrGrowth)} from last year
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <TrendingUp className="h-6 w-6 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Customers Widget */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Customers</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">
-                    {metrics.customers.toLocaleString()}
-                  </div>
-                  <div className="flex items-center text-sm text-green-600 mt-1">
-                    <ArrowUpRight className="h-4 w-4 mr-1" />
-                    {formatPercentage(metrics.customerGrowth)} from last month
-                  </div>
+        {/* Customers Widget */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Total Customers</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {metrics.customers.toLocaleString()}
                 </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Users className="h-6 w-6 text-purple-600" />
+                <div className="flex items-center text-sm text-green-600 mt-1">
+                  <ArrowUpRight className="h-4 w-4 mr-1" />
+                  {formatPercentage(metrics.customerGrowth)} from last month
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                <Users className="h-6 w-6 text-purple-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-        {/* Right Column - Recent Activity */}
-        <div className="lg:col-span-1">
-          <RecentActivity />
-        </div>
+      {/* Recent Activity - Full Width */}
+      <div className="w-full">
+        <RecentActivity />
       </div>
     </div>
   );
