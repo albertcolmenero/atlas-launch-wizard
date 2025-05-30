@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import DevelopmentDashboard from "./pages/DevelopmentDashboard";
 import DevelopmentGatedDashboard from "./pages/DevelopmentGatedDashboard";
+import DevelopmentGatedDashboardCompleted from "./pages/DevelopmentGatedDashboardCompleted";
 import ProductionGatedDashboard from "./pages/ProductionGatedDashboard";
 import ProductionDashboard from "./pages/ProductionDashboard";
 import Widgets from "./pages/Widgets";
@@ -56,6 +57,9 @@ const App = () => (
           
           {/* Development gated dashboard - for users who haven't completed setup */}
           <Route path="/development-gated-dashboard" element={<AppLayout><DevelopmentGatedDashboard /></AppLayout>} />
+          
+          {/* Development gated dashboard completed - for users who completed all steps */}
+          <Route path="/development-gated-dashboard-completed" element={<AppLayout><DevelopmentGatedDashboardCompleted /></AppLayout>} />
           
           {/* Production gated dashboard - for users transitioning to production */}
           <Route path="/production-gated-dashboard" element={<AppLayout><ProductionGatedDashboard /></AppLayout>} />
