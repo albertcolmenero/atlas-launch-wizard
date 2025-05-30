@@ -57,16 +57,16 @@ const DevelopmentGatedDashboardCompleted = () => {
       {/* Completed Steps Summary */}
       <div className="space-y-4">
         {/* Step 1: Create a pricing model */}
-        <Card className="border-l-4 border-l-green-500 bg-green-50">
+        <Card className="border-l-4 border-l-purple-500">
           <CardContent className="p-6">
             <div className="flex items-start">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+              <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
                 <Check className="h-4 w-4 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">✅ Pricing model created</h3>
-                <p className="text-green-700 text-sm">
-                  Your pricing structure is set up and ready to go!
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">Create a pricing model</h3>
+                <p className="text-green-600 text-sm">
+                  You have successfully created a <button className="text-purple-600 underline">pricing model</button>!
                 </p>
               </div>
             </div>
