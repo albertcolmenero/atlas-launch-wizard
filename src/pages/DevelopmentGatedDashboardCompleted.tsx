@@ -39,7 +39,9 @@ const DevelopmentGatedDashboardCompleted = () => {
       {/* You're all set Card - moved to top */}
       <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 mb-8">
         <CardContent className="p-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">You're all set!</h2>
+                    <Sparkles className="h-10 w-10 text-green-600" />
+
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Congratulations, {userData.name}! You're all set!</h2>
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
             Your Atlas integration is complete and ready for development. You can now access your 
             development dashboard to monitor your application, configure features, and prepare for production.
