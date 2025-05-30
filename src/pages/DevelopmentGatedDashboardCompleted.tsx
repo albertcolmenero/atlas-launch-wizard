@@ -36,8 +36,26 @@ const DevelopmentGatedDashboardCompleted = () => {
         </p>
       </div>
 
+      {/* You're all set Card - moved to top */}
+      <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 mb-8">
+        <CardContent className="p-8 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">You're all set!</h2>
+          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+            Your Atlas integration is complete and ready for development. You can now access your 
+            development dashboard to monitor your application, configure features, and prepare for production.
+          </p>
+          <Button 
+            onClick={handleContinue}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 text-lg"
+            size="lg"
+          >
+            Continue to Dashboard
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Completed Steps Summary */}
-      <div className="space-y-4 mb-8">
+      <div className="space-y-4">
         {/* Step 1: Create a pricing model */}
         <Card className="border-l-4 border-l-green-500 bg-green-50">
           <CardContent className="p-6">
@@ -89,24 +107,6 @@ const DevelopmentGatedDashboardCompleted = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* Next Steps Card */}
-      <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
-        <CardContent className="p-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">You're all set!</h2>
-          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            Your Atlas integration is complete and ready for development. You can now access your 
-            development dashboard to monitor your application, configure features, and prepare for production.
-          </p>
-          <Button 
-            onClick={handleContinue}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 text-lg"
-            size="lg"
-          >
-            Continue to Dashboard
-          </Button>
-        </CardContent>
-      </Card>
     </div>
   );
 };
