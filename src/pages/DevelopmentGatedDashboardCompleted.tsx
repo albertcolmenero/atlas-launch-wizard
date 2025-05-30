@@ -74,33 +74,50 @@ const DevelopmentGatedDashboardCompleted = () => {
         </Card>
 
         {/* Step 2: Integrate Stripe */}
-        <Card className="border-l-4 border-l-green-500 bg-green-50">
+        <Card className="border-l-4 border-l-purple-500">
           <CardContent className="p-6">
             <div className="flex items-start">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+              <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
                 <Check className="h-4 w-4 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">✅ Stripe integration completed</h3>
-                <p className="text-green-700 text-sm">
-                  Payment processing is now connected and configured.
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">Stripe integration completed</h3>
+                <p className="text-green-600 text-sm">
+                  Payment processing is now connected and configured!
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Step 3: Connect the Atlas SDK */}
+        <Card className="border-l-4 border-l-purple-500">
+          <CardContent className="p-6">
+            <div className="flex items-start">
+              <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                <Check className="h-4 w-4 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">Atlas SDK connected</h3>
+                <p className="text-green-600 text-sm">
+                  Your application is successfully integrated with Atlas.
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Step 3: Connect the Atlas SDK */}
-        <Card className="border-l-4 border-l-green-500 bg-green-50">
+        {/* Step 4: Pricing Table rendered */}
+        <Card className="border-l-4 border-l-purple-500">
           <CardContent className="p-6">
             <div className="flex items-start">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+              <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
                 <Check className="h-4 w-4 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">✅ Atlas SDK connected</h3>
-                <p className="text-green-700 text-sm">
-                  Your application is successfully integrated with Atlas.
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">Pricing Table component embeded</h3>
+                <p className="text-green-600 text-sm">
+                  The pricing table component is already embeded into your app!
                 </p>
               </div>
             </div>
