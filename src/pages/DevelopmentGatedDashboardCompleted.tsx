@@ -23,23 +23,11 @@ const DevelopmentGatedDashboardCompleted = () => {
   return (
     <div className="max-w-4xl mx-auto">
       {/* Congratulations Header */}
-      <div className="text-center mb-8">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Sparkles className="h-10 w-10 text-green-600" />
-        </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Congratulations, {userData.name}!</h1>
-        <p className="text-gray-600 text-lg">
-          You've successfully completed all setup steps for Atlas! 🎉
-        </p>
-        <p className="text-gray-500 mt-2">
-          Your application is now ready to start monetizing with Atlas.
-        </p>
-      </div>
+      
 
       {/* You're all set Card - moved to top */}
       <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 mb-8">
         <CardContent className="p-8 text-center">
-                    <Sparkles className="h-10 w-10 text-green-600" />
 
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Congratulations, {userData.name}! You're all set!</h2>
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
