@@ -482,137 +482,135 @@ const PricingModel = () => {
             {/* Main Pricing Table */}
             <Card className="mb-8">
               <CardContent className="p-6">
-                <div className="grid grid-cols-1 gap-6">
-                  {/* Plan Headers */}
-                  <div className="grid grid-cols-4 gap-4 mb-6">
-                    <div></div> {/* Empty cell for feature names column */}
-                    {plans.map((plan, index) => (
-                      <div key={plan.id} className="text-center">
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                          <h3 className="text-lg font-semibold">{plan.name}</h3>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-6 w-6">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-48">
-                              <div className="space-y-2">
+                {/* Plan Headers */}
+                <div className="grid grid-cols-4 gap-4 mb-6">
+                  <div></div> {/* Empty cell for feature names column */}
+                  {plans.map((plan, index) => (
+                    <div key={plan.id} className="text-center">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <h3 className="text-lg font-semibold">{plan.name}</h3>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-48">
+                            <div className="space-y-2">
+                              <Input
+                                placeholder="Plan name"
+                                value={plan.name}
+                                onChange={(e) => updatePlan(index, 'name', e.target.value)}
+                              />
+                              <div className="flex gap-2">
+                                <span className="text-sm">$</span>
                                 <Input
-                                  placeholder="Plan name"
-                                  value={plan.name}
-                                  onChange={(e) => updatePlan(index, 'name', e.target.value)}
+                                  placeholder="Price"
+                                  value={plan.price}
+                                  onChange={(e) => updatePlan(index, 'price', e.target.value)}
                                 />
-                                <div className="flex gap-2">
-                                  <span className="text-sm">$</span>
-                                  <Input
-                                    placeholder="Price"
-                                    value={plan.price}
-                                    onChange={(e) => updatePlan(index, 'price', e.target.value)}
-                                  />
-                                  <span className="text-sm text-gray-500">/ month</span>
-                                </div>
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={() => removePlan(index)}
-                                  className="w-full"
-                                >
-                                  Delete Plan
-                                </Button>
+                                <span className="text-sm text-gray-500">/ month</span>
                               </div>
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                        <p className="text-sm text-gray-500 mb-2">{plan.name}</p>
-                        <div className="text-xl font-bold text-purple-500">
-                          ${getPriceForPeriod(plan.price, billingPeriod)}{" "}
-                          <span className="text-sm text-gray-500">/ {getPeriodLabel(billingPeriod)}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Features Grid */}
-                  <div className="space-y-4">
-                    {sharedFeatures.map((feature, featureIndex) => (
-                      <div key={feature} className="grid grid-cols-4 gap-4 items-center py-2 border-b border-gray-100 last:border-b-0">
-                        <div className="flex items-center gap-2">
-                          <div>
-                            <div className="font-medium">{feature}</div>
-                            <div className="text-sm text-gray-500">
-                              ID: {feature.toLowerCase().replace(/\s+/g, '-')}
-                            </div>
-                          </div>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-6 w-6">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-48">
                               <Button
                                 variant="destructive"
                                 size="sm"
-                                onClick={() => removeFeature(feature)}
+                                onClick={() => removePlan(index)}
                                 className="w-full"
                               >
-                                Remove Feature
+                                Delete Plan
                               </Button>
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                        
-                        {plans.map((plan, planIndex) => (
-                          <div key={`${plan.id}-${feature}`} className="text-center">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => toggleFeatureForPlan(planIndex, feature)}
-                            >
-                              {isPlanFeatureEnabled(planIndex, feature) ? (
-                                <Check className="h-5 w-5 text-purple-500" />
-                              ) : (
-                                <X className="h-5 w-5 text-gray-400" />
-                              )}
-                            </Button>
-                          </div>
-                        ))}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </div>
-                    ))}
-                  </div>
+                      <p className="text-sm text-gray-500 mb-2">{plan.name}</p>
+                      <div className="text-xl font-bold text-purple-500">
+                        ${getPriceForPeriod(plan.price, billingPeriod)}{" "}
+                        <span className="text-sm text-gray-500">/ {getPeriodLabel(billingPeriod)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-                  {/* Add New Feature Button */}
-                  <div className="flex justify-center pt-4 border-t">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" className="flex items-center gap-2">
-                          <Plus className="h-4 w-4" />
-                          Add New Feature
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-80">
-                        <div className="space-y-4">
-                          <h4 className="font-medium">Add a new feature</h4>
-                          <div className="flex gap-2">
-                            <Input
-                              placeholder="Feature name"
-                              value={newFeature}
-                              onChange={(e) => setNewFeature(e.target.value)}
-                              className="flex-grow"
-                            />
-                            <Button
-                              onClick={addFeatureToAllPlans}
-                              disabled={!newFeature.trim()}
-                            >
-                              Add
-                            </Button>
+                {/* Features Grid */}
+                <div className="space-y-4">
+                  {sharedFeatures.map((feature, featureIndex) => (
+                    <div key={feature} className="grid grid-cols-4 gap-4 items-center py-2 border-b border-gray-100 last:border-b-0">
+                      <div className="flex items-center gap-2">
+                        <div>
+                          <div className="font-medium">{feature}</div>
+                          <div className="text-sm text-gray-500">
+                            ID: {feature.toLowerCase().replace(/\s+/g, '-')}
                           </div>
                         </div>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-48">
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => removeFeature(feature)}
+                              className="w-full"
+                            >
+                              Remove Feature
+                            </Button>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      
+                      {plans.map((plan, planIndex) => (
+                        <div key={`${plan.id}-${feature}`} className="text-center">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => toggleFeatureForPlan(planIndex, feature)}
+                          >
+                            {isPlanFeatureEnabled(planIndex, feature) ? (
+                              <Check className="h-5 w-5 text-purple-500" />
+                            ) : (
+                              <X className="h-5 w-5 text-gray-400" />
+                            )}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add New Feature Button */}
+                <div className="flex justify-center pt-4 border-t">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="flex items-center gap-2">
+                        <Plus className="h-4 w-4" />
+                        Add New Feature
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80">
+                      <div className="space-y-4">
+                        <h4 className="font-medium">Add a new feature</h4>
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Feature name"
+                            value={newFeature}
+                            onChange={(e) => setNewFeature(e.target.value)}
+                            className="flex-grow"
+                          />
+                          <Button
+                            onClick={addFeatureToAllPlans}
+                            disabled={!newFeature.trim()}
+                          >
+                            Add
+                          </Button>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 {/* Create New Plan Button */}
