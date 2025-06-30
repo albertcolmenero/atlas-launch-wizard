@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Check, Plus, Trash2, X, ArrowRight, Calendar, Clock, RefreshCw, Settings2 } from "lucide-react";
+import { Check, Plus, Trash2, X, ArrowRight, Calendar, Clock, RefreshCw, Settings2, MoreHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { z } from "zod";
@@ -30,6 +30,7 @@ type FeatureType = {
   name: string;
   type: "boolean" | "limit";
   limit?: string;
+  id?: string;
 };
 
 type PlanType = {
@@ -40,7 +41,8 @@ type PlanType = {
   trialAvailable?: boolean;
   trialDays?: number;
   defaultOnCancel?: boolean;
-  monthlyRevenue?: number; // Monthly recurring revenue
+  monthlyRevenue?: number;
+  id?: string;
 };
 
 const PricingModel = () => {
@@ -73,8 +75,9 @@ const PricingModel = () => {
         const parsedData = JSON.parse(storedUserData);
         
         if (parsedData.pricingModel && parsedData.pricingModel.plans) {
-          setPlans(parsedData.pricingModel.plans.map((plan: PlanType) => ({
+          setPlans(parsedData.pricingModel.plans.map((plan: PlanType, index: number) => ({
             ...plan,
+            id: plan.id || `plan-${index}`,
             trialAvailable: plan.trialAvailable || false,
             trialDays: plan.trialDays || 14,
             defaultOnCancel: plan.defaultOnCancel || false,
@@ -107,49 +110,52 @@ const PricingModel = () => {
   const initializeDefaultPricing = () => {
     const defaultPlans: PlanType[] = [
       {
-        name: "Basic",
-        price: "0",
-        planType: "free",
+        id: "basic-plan",
+        name: "Basic plan",
+        price: "10",
+        planType: "paid",
         features: [
-          { name: "Core Features", type: "boolean" },
-          { name: "Users", type: "limit", limit: "5" },
+          { name: "Basic entitlement", type: "boolean", id: "basic-entitlement" },
+          { name: "Pro entitlement", type: "boolean", id: "pro-entitlement" },
+          { name: "Enterprise entitlement", type: "boolean", id: "enterprise-entitlement" },
         ],
         trialAvailable: false,
         defaultOnCancel: true,
         monthlyRevenue: 0
       },
       {
-        name: "Pro",
-        price: "79",
+        id: "pro-plan",
+        name: "Pro plan",
+        price: "20",
         planType: "paid",
         features: [
-          { name: "Core Features", type: "boolean" },
-          { name: "Users", type: "limit", limit: "20" },
-          { name: "API Access", type: "boolean" },
+          { name: "Basic entitlement", type: "boolean", id: "basic-entitlement" },
+          { name: "Pro entitlement", type: "boolean", id: "pro-entitlement" },
+          { name: "Enterprise entitlement", type: "boolean", id: "enterprise-entitlement" },
         ],
         trialAvailable: true,
         trialDays: 14,
-        monthlyRevenue: 3555 // 79 * 45 customers
+        monthlyRevenue: 3555
       },
       {
-        name: "Enterprise",
-        price: "",
-        planType: "custom",
+        id: "enterprise-plan",
+        name: "Enterprise plan",
+        price: "30",
+        planType: "paid",
         features: [
-          { name: "Core Features", type: "boolean" },
-          { name: "Users", type: "limit", limit: "Unlimited" },
-          { name: "API Access", type: "boolean" },
-          { name: "Premium Support", type: "boolean" },
+          { name: "Basic entitlement", type: "boolean", id: "basic-entitlement" },
+          { name: "Pro entitlement", type: "boolean", id: "pro-entitlement" },
+          { name: "Enterprise entitlement", type: "boolean", id: "enterprise-entitlement" },
         ],
         trialAvailable: false,
-        monthlyRevenue: 12000 // Custom price for enterprise
+        monthlyRevenue: 12000
       }
     ];
     
     setPlans(defaultPlans);
-    setSharedFeatures(["Core Features", "Users", "API Access", "Premium Support"]);
+    setSharedFeatures(["Basic entitlement", "Pro entitlement", "Enterprise entitlement"]);
   };
-  
+
   const savePricingModel = () => {
     try {
       // Get existing user data
@@ -182,14 +188,15 @@ const PricingModel = () => {
   const addNewPlan = () => {
     // Create a new plan with the shared features
     const newPlan: PlanType = {
+      id: `plan-${plans.length + 1}`,
       name: `Plan ${plans.length + 1}`,
       price: "",
       planType: "paid",
       features: sharedFeatures.map(feature => {
         return { 
           name: feature, 
-          type: feature === "Users" ? "limit" : "boolean", 
-          limit: feature === "Users" ? "10" : undefined 
+          type: "boolean",
+          id: feature.toLowerCase().replace(/\s+/g, '-')
         };
       }),
       trialAvailable: false,
@@ -237,7 +244,11 @@ const PricingModel = () => {
       if (!plan.features.some(f => f.name === newFeature)) {
         return {
           ...plan,
-          features: [...plan.features, { name: newFeature, type: "boolean" } as FeatureType]
+          features: [...plan.features, { 
+            name: newFeature, 
+            type: "boolean" as const,
+            id: newFeature.toLowerCase().replace(/\s+/g, '-')
+          }]
         };
       }
       return plan;
@@ -250,51 +261,6 @@ const PricingModel = () => {
       title: "Feature added",
       description: `${newFeature} has been added to all plans.`
     });
-  };
-  
-  const addFeatureToPlan = (planIndex: number, featureName: string) => {
-    if (!featureName.trim()) return;
-    
-    const updatedPlans = [...plans];
-    
-    // Check if the feature already exists in the plan
-    if (!updatedPlans[planIndex].features.some(f => f.name === featureName)) {
-      updatedPlans[planIndex].features.push({
-        name: featureName,
-        type: "boolean"
-      });
-      setPlans(updatedPlans);
-      
-      // If this is a new feature, add it to shared features too
-      if (!sharedFeatures.includes(featureName)) {
-        setSharedFeatures([...sharedFeatures, featureName]);
-      }
-      
-      toast({
-        title: "Feature added to plan",
-        description: `${featureName} has been added to ${plans[planIndex].name}.`
-      });
-    }
-  };
-  
-  const updateFeature = (planIndex: number, featureIndex: number, field: string, value: any) => {
-    const updatedPlans = [...plans];
-    if (field === 'type') {
-      // If changing from boolean to limit, add a default limit
-      const updatedFeature = {
-        ...updatedPlans[planIndex].features[featureIndex],
-        [field]: value,
-        limit: value === 'limit' ? '10' : undefined
-      };
-      updatedPlans[planIndex].features[featureIndex] = updatedFeature;
-    } else {
-      // Regular update for other fields
-      updatedPlans[planIndex].features[featureIndex] = {
-        ...updatedPlans[planIndex].features[featureIndex],
-        [field]: value
-      };
-    }
-    setPlans(updatedPlans);
   };
   
   const removeFeature = (featureName: string) => {
@@ -315,61 +281,51 @@ const PricingModel = () => {
       description: `${featureName} has been removed from all plans.`
     });
   };
-  
-  const removeFeatureFromPlan = (planIndex: number, featureIndex: number) => {
+
+  const toggleFeatureForPlan = (planIndex: number, featureName: string) => {
     const updatedPlans = [...plans];
-    const featureToRemove = updatedPlans[planIndex].features[featureIndex].name;
+    const plan = updatedPlans[planIndex];
+    const featureIndex = plan.features.findIndex(f => f.name === featureName);
     
-    updatedPlans[planIndex].features.splice(featureIndex, 1);
-    setPlans(updatedPlans);
-    
-    toast({
-      title: "Feature removed from plan",
-      description: `${featureToRemove} has been removed from ${plans[planIndex].name}.`
-    });
-  };
-  
-  const moveFeatureUp = (planIndex: number, featureIndex: number) => {
-    if (featureIndex === 0) return;
-    
-    const updatedPlans = [...plans];
-    const features = [...updatedPlans[planIndex].features];
-    const temp = features[featureIndex];
-    features[featureIndex] = features[featureIndex - 1];
-    features[featureIndex - 1] = temp;
-    
-    updatedPlans[planIndex].features = features;
-    setPlans(updatedPlans);
-  };
-  
-  const moveFeatureDown = (planIndex: number, featureIndex: number) => {
-    const updatedPlans = [...plans];
-    const features = updatedPlans[planIndex].features;
-    
-    if (featureIndex === features.length - 1) return;
-    
-    const temp = features[featureIndex];
-    features[featureIndex] = features[featureIndex + 1];
-    features[featureIndex + 1] = temp;
+    if (featureIndex >= 0) {
+      // Feature exists, toggle its type between boolean and disabled
+      const currentFeature = plan.features[featureIndex];
+      if (currentFeature.type === "boolean") {
+        // Remove the feature (set to disabled/X)
+        plan.features.splice(featureIndex, 1);
+      }
+    } else {
+      // Feature doesn't exist, add it
+      plan.features.push({
+        name: featureName,
+        type: "boolean",
+        id: featureName.toLowerCase().replace(/\s+/g, '-')
+      });
+    }
     
     setPlans(updatedPlans);
   };
-  
-  const setDefaultOnCancelPlan = (planIndex: number) => {
-    // Make sure only one plan can be the default
-    const updatedPlans = plans.map((plan, idx) => ({
-      ...plan,
-      defaultOnCancel: idx === planIndex
-    }));
-    
-    setPlans(updatedPlans);
+
+  const isPlanFeatureEnabled = (planIndex: number, featureName: string) => {
+    const plan = plans[planIndex];
+    return plan.features.some(f => f.name === featureName && f.type === "boolean");
   };
-  
+
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Pricing Model</h1>
-        <p className="text-gray-500">Configure and manage your subscription plans</p>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            Pricing Model
+            <div className="w-6 h-6 bg-purple-500 rounded flex items-center justify-center">
+              <span className="text-white text-xs">📋</span>
+            </div>
+          </h1>
+          <p className="text-gray-500">Configure and manage your subscription plans</p>
+        </div>
+        <Button variant="outline" className="text-gray-400">
+          Publish changes to production
+        </Button>
       </div>
       
       <div className="mb-6">
@@ -381,201 +337,150 @@ const PricingModel = () => {
           </TabsList>
           
           <TabsContent value="plans" className="mt-6">
-            {/* Plans Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {plans.map((plan, planIndex) => (
-                <Card key={planIndex} className={`relative ${selectedPlanIndex === planIndex ? 'ring-2 ring-primary' : ''}`}>
-                  <CardHeader className="pb-4">
-                    <div className="absolute top-4 right-4 flex gap-1">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 text-gray-500"
-                        onClick={() => setSelectedPlanIndex(planIndex === selectedPlanIndex ? null : planIndex)}
-                        title="Plan Settings"
-                      >
-                        <Settings2 size={16} />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 text-gray-500 hover:text-red-500"
-                        onClick={() => removePlan(planIndex)}
-                        disabled={plans.length === 1}
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    </div>
-                    
-                    <Input
-                      placeholder="Plan Name"
-                      value={plan.name}
-                      onChange={(e) => updatePlan(planIndex, 'name', e.target.value)}
-                      className="font-bold text-lg mb-2"
-                    />
-                    
-                    <div className="flex gap-4 items-center mb-2">
-                      <Select 
-                        value={plan.planType} 
-                        onValueChange={(value: "free" | "paid" | "custom") => updatePlanType(planIndex, value)}
-                      >
-                        <SelectTrigger className="w-[120px]">
-                          <SelectValue placeholder="Plan Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="free">Free</SelectItem>
-                          <SelectItem value="paid">Paid</SelectItem>
-                          <SelectItem value="custom">Custom</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      
-                      {plan.planType === "paid" && (
-                        <div className="flex items-center">
-                          <span className="text-gray-500 mr-2">$</span>
-                          <Input
-                            type="number"
-                            placeholder="Price"
-                            value={plan.price}
-                            onChange={(e) => updatePlan(planIndex, 'price', e.target.value)}
-                            className="w-20"
-                          />
-                        </div>
-                      )}
-                      
-                      {plan.planType === "custom" && (
-                        <Badge>Contact Sales</Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent className="pt-0">
-                    {/* Features List */}
-                    <h3 className="text-sm font-medium mb-2">Features:</h3>
-                    <PricingPlanFeatures 
-                      planIndex={planIndex} 
-                      features={plan.features} 
-                      updateFeature={updateFeature}
-                      sharedFeatures={sharedFeatures}
-                      removeFeatureFromPlan={removeFeatureFromPlan}
-                      moveFeatureUp={moveFeatureUp}
-                      moveFeatureDown={moveFeatureDown}
-                    />
-                    
-                    {/* Add feature to plan with create option */}
-                    <div className="flex gap-2 mt-4">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button variant="outline" className="w-full text-sm justify-between">
-                            Add feature <Plus size={16} />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-80 p-4">
-                          <div className="space-y-4">
-                            <h4 className="font-medium">Add a feature to this plan</h4>
-                            
-                            {/* Existing features dropdown */}
-                            {sharedFeatures
-                              .filter(feature => !plan.features.some(f => f.name === feature))
-                              .length > 0 ? (
+            {/* Main Pricing Table */}
+            <Card className="mb-8">
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 gap-6">
+                  {/* Plan Headers */}
+                  <div className="grid grid-cols-4 gap-4 mb-6">
+                    <div></div> {/* Empty cell for feature names column */}
+                    {plans.map((plan, index) => (
+                      <div key={plan.id} className="text-center">
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <h3 className="text-lg font-semibold">{plan.name}</h3>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-6 w-6">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-48">
                               <div className="space-y-2">
-                                <h5 className="text-sm text-gray-500">Select from existing features:</h5>
-                                <Select
-                                  onValueChange={(value) => {
-                                    addFeatureToPlan(planIndex, value);
-                                  }}
-                                >
-                                  <SelectTrigger className="text-sm">
-                                    <SelectValue placeholder="Choose a feature" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {sharedFeatures
-                                      .filter(feature => !plan.features.some(f => f.name === feature))
-                                      .map((feature, idx) => (
-                                        <SelectItem key={idx} value={feature}>{feature}</SelectItem>
-                                      ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            ) : (
-                              <p className="text-sm text-gray-500">No existing features available to add.</p>
-                            )}
-                            
-                            {/* Create new feature input */}
-                            <div className="space-y-2">
-                              <h5 className="text-sm text-gray-500">Or create a new feature:</h5>
-                              <div className="flex gap-2">
-                                <Input 
-                                  placeholder="New feature name"
-                                  value={newFeature}
-                                  onChange={(e) => setNewFeature(e.target.value)}
-                                  className="flex-grow"
+                                <Input
+                                  placeholder="Plan name"
+                                  value={plan.name}
+                                  onChange={(e) => updatePlan(index, 'name', e.target.value)}
                                 />
-                                <Button 
-                                  onClick={() => {
-                                    if (newFeature.trim()) {
-                                      addFeatureToPlan(planIndex, newFeature);
-                                      setNewFeature("");
-                                    }
-                                  }}
-                                  disabled={!newFeature.trim()}
+                                <div className="flex gap-2">
+                                  <span className="text-sm">$</span>
+                                  <Input
+                                    placeholder="Price"
+                                    value={plan.price}
+                                    onChange={(e) => updatePlan(index, 'price', e.target.value)}
+                                  />
+                                  <span className="text-sm text-gray-500">/ month</span>
+                                </div>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => removePlan(index)}
+                                  className="w-full"
                                 >
-                                  Create
+                                  Delete Plan
                                 </Button>
                               </div>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        <p className="text-sm text-gray-500 mb-2">{plan.name}</p>
+                        <div className="text-xl font-bold text-purple-500">
+                          ${plan.price} <span className="text-sm text-gray-500">/ month</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Features Grid */}
+                  <div className="space-y-4">
+                    {sharedFeatures.map((feature, featureIndex) => (
+                      <div key={feature} className="grid grid-cols-4 gap-4 items-center py-2 border-b border-gray-100 last:border-b-0">
+                        <div className="flex items-center gap-2">
+                          <div>
+                            <div className="font-medium">{feature}</div>
+                            <div className="text-sm text-gray-500">
+                              ID: {feature.toLowerCase().replace(/\s+/g, '-')}
                             </div>
                           </div>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    
-                    {/* Trial and default plan settings */}
-                    {selectedPlanIndex === planIndex && (
-                      <div className="mt-4 pt-4 border-t border-gray-100">
-                        <PricingPlanSettings 
-                          plan={plan} 
-                          planIndex={planIndex}
-                          updatePlan={updatePlan}
-                          setDefaultOnCancelPlan={setDefaultOnCancelPlan}
-                        />
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-6 w-6">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-48">
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => removeFeature(feature)}
+                                className="w-full"
+                              >
+                                Remove Feature
+                              </Button>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        
+                        {plans.map((plan, planIndex) => (
+                          <div key={`${plan.id}-${feature}`} className="text-center">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => toggleFeatureForPlan(planIndex, feature)}
+                            >
+                              {isPlanFeatureEnabled(planIndex, feature) ? (
+                                <Check className="h-5 w-5 text-purple-500" />
+                              ) : (
+                                <X className="h-5 w-5 text-gray-400" />
+                              )}
+                            </Button>
+                          </div>
+                        ))}
                       </div>
-                    )}
-                    
-                    {/* Analytics Card - Moved to the bottom */}
-                    <Card className="mt-4 border-gray-200">
-                      <CardContent className="p-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-xs text-gray-500">Customers</p>
-                            <p className="text-lg font-semibold">{analytics.customersPerPlan[planIndex] || 0}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500">Monthly Revenue</p>
-                            <p className="text-lg font-semibold">
-                              ${plan.monthlyRevenue?.toLocaleString() || 0}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500">Churn Rate</p>
-                            <p className="text-sm text-gray-500">Coming soon</p>
+                    ))}
+                  </div>
+
+                  {/* Add New Feature Button */}
+                  <div className="flex justify-center pt-4 border-t">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="flex items-center gap-2">
+                          <Plus className="h-4 w-4" />
+                          Add New Feature
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Add a new feature</h4>
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder="Feature name"
+                              value={newFeature}
+                              onChange={(e) => setNewFeature(e.target.value)}
+                              className="flex-grow"
+                            />
+                            <Button
+                              onClick={addFeatureToAllPlans}
+                              disabled={!newFeature.trim()}
+                            >
+                              Add
+                            </Button>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </CardContent>
-                </Card>
-              ))}
-              
-              {/* Add Plan Card */}
-              <div 
-                className="border-2 border-dashed rounded-lg flex items-center justify-center h-[300px] cursor-pointer hover:bg-gray-50 transition-colors"
-                onClick={addNewPlan}
-              >
-                <div className="text-center">
-                  <Plus size={32} className="mx-auto mb-2 text-gray-400" />
-                  <div className="text-sm font-medium">Add Plan</div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 </div>
-              </div>
-            </div>
+
+                {/* Create New Plan Button */}
+                <div className="flex justify-end mt-6">
+                  <Button onClick={addNewPlan} className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Create new plan
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
             
             <div className="flex justify-center mt-6">
               <Button onClick={savePricingModel} className="px-8">
