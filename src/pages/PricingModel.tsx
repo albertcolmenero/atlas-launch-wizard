@@ -433,20 +433,18 @@ const PricingModel = () => {
                     </DialogHeader>
                     
                     <div className="space-y-4">
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="e.g., quarterly, weekly"
-                          value={newTimeframe}
-                          onChange={(e) => setNewTimeframe(e.target.value)}
-                          className="flex-grow"
-                        />
-                        <Button
-                          onClick={addTimeframe}
-                          disabled={!newTimeframe.trim()}
-                        >
-                          Add
-                        </Button>
-                      </div>
+                      <Input
+                        placeholder="e.g., quarterly, weekly"
+                        value={newTimeframe}
+                        onChange={(e) => setNewTimeframe(e.target.value)}
+                        className="flex-grow"
+                      />
+                      <Button
+                        onClick={addTimeframe}
+                        disabled={!newTimeframe.trim()}
+                      >
+                        Add
+                      </Button>
                       
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">Current Timeframes:</Label>
