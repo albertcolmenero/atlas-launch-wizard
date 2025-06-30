@@ -317,9 +317,6 @@ const PricingModel = () => {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             Pricing Model
-            <div className="w-6 h-6 bg-purple-500 rounded flex items-center justify-center">
-              <span className="text-white text-xs">📋</span>
-            </div>
           </h1>
           <p className="text-gray-500">Configure and manage your subscription plans</p>
         </div>
