@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Check, Plus, Trash2, X, ArrowRight, Calendar, Clock, RefreshCw, Settings2, MoreHorizontal } from "lucide-react";
+import { Check, Plus, Trash2, X, ArrowRight, Calendar, Clock, RefreshCw, Settings2, MoreHorizontal, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { z } from "zod";
@@ -24,6 +24,7 @@ import { PricingModelAnalytics } from "@/components/pricing/PricingModelAnalytic
 import { PricingPlanFeatures } from "@/components/pricing/PricingPlanFeatures";
 import { PricingPlanSettings } from "@/components/pricing/PricingPlanSettings";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 // Define a TypeScript type for Plan and Feature
 type FeatureType = {
@@ -48,6 +49,10 @@ type PlanType = {
 const PricingModel = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("plans");
+  const [billingPeriod, setBillingPeriod] = useState("monthly");
+  const [timeframes, setTimeframes] = useState(["monthly", "annual"]);
+  const [isTimeframeModalOpen, setIsTimeframeModalOpen] = useState(false);
+  const [newTimeframe, setNewTimeframe] = useState("");
   
   // Load pricing model from localStorage or use default
   const [plans, setPlans] = useState<PlanType[]>([]);
@@ -311,6 +316,65 @@ const PricingModel = () => {
     return plan.features.some(f => f.name === featureName && f.type === "boolean");
   };
 
+  const addTimeframe = () => {
+    if (!newTimeframe.trim() || timeframes.includes(newTimeframe.toLowerCase())) return;
+    
+    const updatedTimeframes = [...timeframes, newTimeframe.toLowerCase()];
+    setTimeframes(updatedTimeframes);
+    setNewTimeframe("");
+    
+    toast({
+      title: "Timeframe added",
+      description: `${newTimeframe} billing period has been added.`
+    });
+  };
+
+  const removeTimeframe = (timeframe: string) => {
+    if (timeframes.length <= 1) {
+      toast({
+        title: "Cannot remove timeframe",
+        description: "You must have at least one billing period.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const updatedTimeframes = timeframes.filter(t => t !== timeframe);
+    setTimeframes(updatedTimeframes);
+    
+    // If current billing period is removed, switch to first available
+    if (billingPeriod === timeframe) {
+      setBillingPeriod(updatedTimeframes[0]);
+    }
+    
+    toast({
+      title: "Timeframe removed",
+      description: `${timeframe} billing period has been removed.`
+    });
+  };
+
+  const getPriceForPeriod = (basePrice: string, period: string) => {
+    const price = parseFloat(basePrice) || 0;
+    switch (period) {
+      case "annual":
+        return (price * 12 * 0.9).toFixed(0); // 10% discount for annual
+      case "monthly":
+      default:
+        return price.toString();
+    }
+  };
+
+  const getPeriodLabel = (period: string) => {
+    switch (period) {
+      case "monthly":
+        return "month";
+      case "annual":
+        return "year";
+      default:
+        return period;
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="mb-6 flex justify-between items-center">
@@ -334,6 +398,87 @@ const PricingModel = () => {
           </TabsList>
           
           <TabsContent value="plans" className="mt-6">
+            {/* Billing Period Toggle */}
+            <div className="flex items-center justify-center mb-8">
+              <div className="flex items-center gap-4">
+                <div className="flex bg-gray-100 rounded-lg p-1">
+                  {timeframes.map((period) => (
+                    <button
+                      key={period}
+                      onClick={() => setBillingPeriod(period)}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors capitalize ${
+                        billingPeriod === period
+                          ? "bg-white text-gray-900 shadow-sm"
+                          : "text-gray-600 hover:text-gray-900"
+                      }`}
+                    >
+                      {period}
+                    </button>
+                  ))}
+                </div>
+                
+                <Dialog open={isTimeframeModalOpen} onOpenChange={setIsTimeframeModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      Manage
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Manage Billing Periods</DialogTitle>
+                      <DialogDescription>
+                        Add or remove billing timeframes for your pricing plans.
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="e.g., quarterly, weekly"
+                          value={newTimeframe}
+                          onChange={(e) => setNewTimeframe(e.target.value)}
+                          className="flex-grow"
+                        />
+                        <Button
+                          onClick={addTimeframe}
+                          disabled={!newTimeframe.trim()}
+                        >
+                          Add
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">Current Timeframes:</Label>
+                        <div className="space-y-2">
+                          {timeframes.map((period) => (
+                            <div key={period} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                              <span className="capitalize">{period}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeTimeframe(period)}
+                                disabled={timeframes.length <= 1}
+                                className="h-6 w-6 p-0"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <DialogFooter>
+                      <Button onClick={() => setIsTimeframeModalOpen(false)}>
+                        Done
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+
             {/* Main Pricing Table */}
             <Card className="mb-8">
               <CardContent className="p-6">
@@ -381,7 +526,8 @@ const PricingModel = () => {
                         </div>
                         <p className="text-sm text-gray-500 mb-2">{plan.name}</p>
                         <div className="text-xl font-bold text-purple-500">
-                          ${plan.price} <span className="text-sm text-gray-500">/ month</span>
+                          ${getPriceForPeriod(plan.price, billingPeriod)}{" "}
+                          <span className="text-sm text-gray-500">/ {getPeriodLabel(billingPeriod)}</span>
                         </div>
                       </div>
                     ))}
