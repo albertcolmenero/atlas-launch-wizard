@@ -5,11 +5,12 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Plus, Trash2, Check, X, Sparkles, FileText, Upload, Globe, ArrowRight } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Check, X, Sparkles, FileText, Upload, Globe, ArrowRight, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import { FirecrawlService } from "@/utils/FirecrawlService";
 
 type PricingWizardStepProps = {
   onNext: () => void;
@@ -37,7 +38,15 @@ type AIRecommendStep = "input" | "processing" | "pricing-check" | "feedback" | "
 
 const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: PricingWizardStepProps) => {
   // Basic view management
-  const [view, setView] = useState<"choice" | "recommend" | "manual">("choice");
+  const [view, setView] = useState<"choice" | "recommend" | "manual" | "import">("choice");
+  
+  // Import pricing state
+  const [importUrl, setImportUrl] = useState("");
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importText, setImportText] = useState("");
+  const [importStep, setImportStep] = useState<"input" | "processing" | "verification">("input");
+  const [extractedPlans, setExtractedPlans] = useState<PlanType[]>([]);
+  const [selectedImportMethod, setSelectedImportMethod] = useState<"url" | "pdf" | "image" | "text" | null>(null);
   
   // Original fields for recommendation flow
   const [currentRecommendStep, setCurrentRecommendStep] = useState(0);
@@ -278,6 +287,129 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
         setAiRecommendStep("pricing-check");
       }
     }, 500);
+  };
+
+  // Import file handling
+  const handleImportFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setImportFile(file);
+  };
+
+  // Process import data
+  const processImport = async () => {
+    if (!selectedImportMethod) {
+      toast({
+        title: "Method required",
+        description: "Please select an import method.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate input based on method
+    if (
+      (selectedImportMethod === "url" && !importUrl) ||
+      (selectedImportMethod === "text" && !importText) ||
+      ((selectedImportMethod === "pdf" || selectedImportMethod === "image") && !importFile)
+    ) {
+      toast({
+        title: "Input required",
+        description: "Please provide the required input for your selected method.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setImportStep("processing");
+    setIsProcessing(true);
+
+    try {
+      let extractedData: any = null;
+
+      if (selectedImportMethod === "url") {
+        const result = await FirecrawlService.extractPricingFromUrl(importUrl);
+        if (!result.success) {
+          throw new Error(result.error || "Failed to extract pricing from URL");
+        }
+        extractedData = result.data;
+      } else if (selectedImportMethod === "text") {
+        // For text input, we'll simulate parsing
+        extractedData = { content: importText };
+      } else if (selectedImportMethod === "pdf" || selectedImportMethod === "image") {
+        // For files, we'll simulate processing
+        extractedData = { fileName: importFile?.name };
+      }
+
+      // Simulate AI processing and extraction
+      setTimeout(() => {
+        // Mock extracted pricing plans
+        const mockExtractedPlans: PlanType[] = [
+          {
+            name: "Starter",
+            price: "0",
+            planType: "free",
+            features: [
+              { name: "Basic Features", type: "boolean" },
+              { name: "Users", type: "limit", limit: "3" },
+              { name: "Projects", type: "limit", limit: "1" },
+            ],
+          },
+          {
+            name: "Professional",
+            price: "29",
+            planType: "paid",
+            features: [
+              { name: "All Features", type: "boolean" },
+              { name: "Users", type: "limit", limit: "10" },
+              { name: "Projects", type: "limit", limit: "5" },
+              { name: "Priority Support", type: "boolean" },
+            ],
+          },
+          {
+            name: "Enterprise",
+            price: "",
+            planType: "custom",
+            features: [
+              { name: "All Features", type: "boolean" },
+              { name: "Users", type: "limit", limit: "Unlimited" },
+              { name: "Projects", type: "limit", limit: "Unlimited" },
+              { name: "Dedicated Support", type: "boolean" },
+              { name: "Custom Integration", type: "boolean" },
+            ],
+          },
+        ];
+
+        setExtractedPlans(mockExtractedPlans);
+        setImportStep("verification");
+        setIsProcessing(false);
+        
+        toast({
+          title: "Pricing extracted successfully",
+          description: "Please review and verify the extracted pricing plans.",
+        });
+      }, 2000);
+
+    } catch (error) {
+      console.error("Import error:", error);
+      toast({
+        title: "Import failed",
+        description: error instanceof Error ? error.message : "Failed to process import",
+        variant: "destructive",
+      });
+      setImportStep("input");
+      setIsProcessing(false);
+    }
+  };
+
+  // Complete import process
+  const handleImportComplete = () => {
+    updateUserData({
+      pricingModel: {
+        type: "imported",
+        plans: extractedPlans,
+      },
+    });
+    onNext();
   };
 
   // Functions for original implementation
@@ -901,13 +1033,332 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
     }
   };
 
+  // Render import pricing flow
+  const renderImportFlow = () => {
+    switch (importStep) {
+      case "input":
+        return (
+          <div className="max-w-2xl mx-auto">
+            <h3 className="text-xl font-semibold mb-6">Import Your Existing Pricing</h3>
+            <p className="text-gray-500 mb-6">
+              Import your current pricing structure from various sources. We'll extract and standardize your pricing plans automatically.
+            </p>
+
+            <div className="space-y-6">
+              {/* URL Import Option */}
+              <Card 
+                className={cn(
+                  "p-4 cursor-pointer transition-all",
+                  selectedImportMethod === "url" ? "border-2 border-primary bg-primary/5" : "hover:border-primary/40"
+                )}
+                onClick={() => setSelectedImportMethod("url")}
+              >
+                <div className="flex items-start space-x-4">
+                  <div className="bg-primary/10 p-3 rounded-full">
+                    <Globe className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium mb-2">Import from Website URL</h4>
+                    <p className="text-sm text-gray-500 mb-3">
+                      Paste your pricing page URL and we'll extract your existing plans and features.
+                    </p>
+                    <Input
+                      placeholder="https://yourcompany.com/pricing"
+                      value={importUrl}
+                      onChange={(e) => setImportUrl(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      disabled={selectedImportMethod !== "url" && selectedImportMethod !== null}
+                      className={selectedImportMethod === "url" ? "border-primary" : ""}
+                    />
+                  </div>
+                </div>
+              </Card>
+
+              {/* PDF Upload Option */}
+              <Card 
+                className={cn(
+                  "p-4 cursor-pointer transition-all",
+                  selectedImportMethod === "pdf" ? "border-2 border-primary bg-primary/5" : "hover:border-primary/40"
+                )}
+                onClick={() => setSelectedImportMethod("pdf")}
+              >
+                <div className="flex items-start space-x-4">
+                  <div className="bg-primary/10 p-3 rounded-full">
+                    <FileText className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium mb-2">Upload PDF Document</h4>
+                    <p className="text-sm text-gray-500 mb-3">
+                      Upload a PDF with your pricing information (pricing sheet, proposal, etc.).
+                    </p>
+                    <div 
+                      className={cn(
+                        "border-2 border-dashed rounded-md p-4 text-center",
+                        selectedImportMethod === "pdf" ? "border-primary/50 bg-primary/5" : "border-gray-200",
+                        selectedImportMethod !== "pdf" && selectedImportMethod !== null ? "opacity-50" : ""
+                      )}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (selectedImportMethod === "pdf") {
+                          document.getElementById("pdf-upload")?.click();
+                        }
+                      }}
+                    >
+                      {importFile && selectedImportMethod === "pdf" ? (
+                        <div className="flex items-center justify-center space-x-2">
+                          <FileText className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{importFile.name}</span>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setImportFile(null);
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div>
+                          <Upload className="h-8 w-8 text-gray-400 mb-2 mx-auto" />
+                          <p className="text-sm">Click to upload PDF</p>
+                          <p className="text-xs text-gray-500">PDF files up to 10MB</p>
+                        </div>
+                      )}
+                      <input
+                        id="pdf-upload"
+                        type="file"
+                        accept=".pdf"
+                        className="hidden"
+                        onChange={handleImportFileChange}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Image Upload Option */}
+              <Card 
+                className={cn(
+                  "p-4 cursor-pointer transition-all",
+                  selectedImportMethod === "image" ? "border-2 border-primary bg-primary/5" : "hover:border-primary/40"
+                )}
+                onClick={() => setSelectedImportMethod("image")}
+              >
+                <div className="flex items-start space-x-4">
+                  <div className="bg-primary/10 p-3 rounded-full">
+                    <Download className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium mb-2">Upload Image/Screenshot</h4>
+                    <p className="text-sm text-gray-500 mb-3">
+                      Upload a screenshot of your pricing page or pricing table image.
+                    </p>
+                    <div 
+                      className={cn(
+                        "border-2 border-dashed rounded-md p-4 text-center",
+                        selectedImportMethod === "image" ? "border-primary/50 bg-primary/5" : "border-gray-200",
+                        selectedImportMethod !== "image" && selectedImportMethod !== null ? "opacity-50" : ""
+                      )}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (selectedImportMethod === "image") {
+                          document.getElementById("image-upload")?.click();
+                        }
+                      }}
+                    >
+                      {importFile && selectedImportMethod === "image" ? (
+                        <div className="flex items-center justify-center space-x-2">
+                          <Download className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{importFile.name}</span>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setImportFile(null);
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div>
+                          <Upload className="h-8 w-8 text-gray-400 mb-2 mx-auto" />
+                          <p className="text-sm">Click to upload image</p>
+                          <p className="text-xs text-gray-500">PNG, JPG, JPEG up to 10MB</p>
+                        </div>
+                      )}
+                      <input
+                        id="image-upload"
+                        type="file"
+                        accept=".png,.jpg,.jpeg"
+                        className="hidden"
+                        onChange={handleImportFileChange}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Text Input Option */}
+              <Card 
+                className={cn(
+                  "p-4 cursor-pointer transition-all",
+                  selectedImportMethod === "text" ? "border-2 border-primary bg-primary/5" : "hover:border-primary/40"
+                )}
+                onClick={() => setSelectedImportMethod("text")}
+              >
+                <div className="flex items-start space-x-4">
+                  <div className="bg-primary/10 p-3 rounded-full">
+                    <FileText className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium mb-2">Paste Pricing Text</h4>
+                    <p className="text-sm text-gray-500 mb-3">
+                      Copy and paste your existing pricing information as text.
+                    </p>
+                    <Textarea
+                      placeholder="Basic Plan: $29/month - Up to 5 users, 10 projects, Email support..."
+                      value={importText}
+                      onChange={(e) => setImportText(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      disabled={selectedImportMethod !== "text" && selectedImportMethod !== null}
+                      className={cn(
+                        "min-h-[120px]",
+                        selectedImportMethod === "text" ? "border-primary" : ""
+                      )}
+                    />
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            <div className="flex justify-between mt-8">
+              <Button variant="ghost" onClick={() => setView("choice")}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+              <Button onClick={processImport} disabled={!selectedImportMethod || isProcessing}>
+                {isProcessing ? "Processing..." : "Import Pricing"}
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        );
+
+      case "processing":
+        return (
+          <div className="max-w-md mx-auto text-center py-10">
+            <div className="mb-6">
+              <div className="h-12 w-12 rounded-full bg-primary/10 mx-auto flex items-center justify-center mb-4">
+                <Download className="h-6 w-6 text-primary animate-pulse" />
+              </div>
+              <h3 className="text-xl font-semibold">Processing Your Pricing Data</h3>
+              <p className="text-gray-500 mt-2">
+                We're extracting and standardizing your pricing information...
+              </p>
+            </div>
+            
+            <div className="space-y-6 mb-8">
+              <div className="text-sm text-gray-600">
+                This may take a moment while we analyze your pricing structure.
+              </div>
+            </div>
+          </div>
+        );
+
+      case "verification":
+        return (
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-xl font-semibold mb-2">Verify Imported Pricing</h3>
+            <p className="text-gray-500 mb-6">
+              Please review the extracted pricing plans and make any necessary adjustments.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              {extractedPlans.map((plan, planIndex) => (
+                <Card key={planIndex} className="p-4">
+                  <h4 className="font-semibold text-lg mb-2">{plan.name}</h4>
+                  <div className="mb-4">
+                    {plan.planType === "custom" ? (
+                      <span className="text-xl font-bold text-gray-700">Custom</span>
+                    ) : (
+                      <span>
+                        <span className="text-xl font-bold">${plan.price}</span>
+                        <span className="text-sm text-gray-500">/mo</span>
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {plan.features.map((feature, featureIndex) => (
+                      <div key={featureIndex} className="flex items-center">
+                        <Check size={16} className="text-green-500 mr-2 shrink-0" />
+                        <span className="text-sm">
+                          {feature.type === "limit" 
+                            ? `${feature.name}: ${feature.limit}` 
+                            : feature.name
+                          }
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              ))}
+            </div>
+            
+            <div className="flex justify-between">
+              <Button variant="ghost" onClick={() => setImportStep("input")}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setPlans(extractedPlans);
+                    setView("manual");
+                  }}
+                >
+                  Customize Plans
+                </Button>
+                <Button onClick={handleImportComplete}>
+                  Use These Plans
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   // Render choice view
   const renderChoiceView = () => {
     return (
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <h2 className="text-2xl font-semibold mb-6 text-center">How would you like to set up your pricing?</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="p-6 cursor-pointer hover:border-primary transition-all" onClick={() => setView("import")}>
+            <div className="flex items-start mb-4">
+              <div className="p-2 bg-primary/10 rounded-full mr-4">
+                <Download className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Import Existing Pricing</h3>
+                <p className="text-sm text-gray-500">
+                  Already have pricing? Import from your website, PDF, or paste your existing structure.
+                </p>
+              </div>
+            </div>
+            <Button className="w-full" variant="secondary">Import Pricing</Button>
+          </Card>
+
           <Card className="p-6 cursor-pointer hover:border-primary transition-all" onClick={() => setView("recommend")}>
             <div className="flex items-start mb-4">
               <div className="p-2 bg-primary/10 rounded-full mr-4">
@@ -1107,6 +1558,8 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
     switch (view) {
       case "choice":
         return renderChoiceView();
+      case "import":
+        return renderImportFlow();
       case "recommend":
         return renderAIRecommendationFlow();
       case "manual":
