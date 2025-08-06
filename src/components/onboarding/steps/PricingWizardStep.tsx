@@ -695,7 +695,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
             <div className="flex justify-between mt-8">
               <Button variant="ghost" onClick={() => setView("choice")}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
+                Back to options
               </Button>
               <Button onClick={processInput} disabled={!selectedInputMethod}>
                 Next
@@ -1238,7 +1238,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
             <div className="flex justify-between mt-8">
               <Button variant="ghost" onClick={() => setView("choice")}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
+                Back to options
               </Button>
               <Button onClick={processImport} disabled={!selectedImportMethod || isProcessing}>
                 {isProcessing ? "Processing..." : "Import Pricing"}
@@ -1545,7 +1545,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
         <div className="flex justify-between">
           <Button variant="ghost" onClick={() => setView("choice")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            Back to options
           </Button>
           <Button onClick={handleManualSave}>Save and Continue</Button>
         </div>

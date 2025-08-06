@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Check, Plus, Trash2, X, ArrowRight, Calendar, Clock, RefreshCw, Settings2, MoreHorizontal, Settings } from "lucide-react";
+import { Check, Plus, Trash2, X, ArrowRight, Calendar, Clock, RefreshCw, Settings2, MoreHorizontal, Settings, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { z } from "zod";
@@ -384,9 +384,40 @@ const PricingModel = () => {
           </h1>
           <p className="text-gray-500">Configure and manage your subscription plans</p>
         </div>
-        <Button variant="outline" className="text-gray-400">
-          Publish changes to production
-        </Button>
+        <div className="flex gap-2">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                Import Pricing
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Import Existing Pricing</DialogTitle>
+                <DialogDescription>
+                  Import your pricing model from a website URL, PDF, image, or text.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">This feature allows you to quickly import your existing pricing structure.</p>
+                </div>
+                <Button 
+                  className="w-full" 
+                  onClick={() => {
+                    window.open('/onboarding', '_blank');
+                  }}
+                >
+                  Open Import Wizard
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button variant="outline" className="text-gray-400">
+            Publish changes to production
+          </Button>
+        </div>
       </div>
       
       <div className="mb-6">
