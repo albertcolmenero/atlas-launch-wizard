@@ -45,10 +45,9 @@ const OnboardingWizard = () => {
         ...prevData,
         ...parsedData
       }));
-    } else {
-      // If no user data, redirect to sign up
-      navigate('/');
     }
+    // Note: Removed redirect to '/' when no user data exists
+    // This allows the onboarding page to be accessed directly for demo purposes
   }, [navigate]);
 
   const progressPercentage = ((currentStep) / (STEPS.length - 1)) * 100;
