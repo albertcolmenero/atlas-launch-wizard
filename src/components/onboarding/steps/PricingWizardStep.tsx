@@ -17,6 +17,7 @@ type PricingWizardStepProps = {
   onBack: () => void;
   updateUserData: (data: any) => void;
   userData: any;
+  initialView?: "choice" | "recommend" | "manual" | "import";
 };
 
 type PlanType = {
@@ -36,9 +37,17 @@ type FeatureType = {
 type InputMethod = "url" | "document" | "text" | null;
 type AIRecommendStep = "input" | "processing" | "pricing-check" | "feedback" | "context" | "recommendations";
 
-const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: PricingWizardStepProps) => {
-  // Basic view management
-  const [view, setView] = useState<"choice" | "recommend" | "manual" | "import">("choice");
+const PricingWizardStep = ({ onNext, onBack, updateUserData, userData, initialView }: PricingWizardStepProps) => {
+  // Basic view management - determine initial view based on selected goal or prop
+  const getInitialView = (): "choice" | "recommend" | "manual" | "import" => {
+    if (initialView) return initialView;
+    if (userData?.selectedGoal === "import-pricing") return "import";
+    if (userData?.selectedGoal === "ai-recommendations") return "recommend";
+    if (userData?.selectedGoal === "custom-pricing") return "manual";
+    return "choice";
+  };
+
+  const [view, setView] = useState<"choice" | "recommend" | "manual" | "import">(getInitialView());
   
   // Import pricing state
   const [importUrl, setImportUrl] = useState("");
@@ -693,7 +702,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
             </div>
 
             <div className="flex justify-between mt-8">
-              <Button variant="ghost" onClick={() => setView("choice")}>
+              <Button variant="ghost" onClick={onBack}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to options
               </Button>
@@ -1236,7 +1245,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
             </div>
 
             <div className="flex justify-between mt-8">
-              <Button variant="ghost" onClick={() => setView("choice")}>
+              <Button variant="ghost" onClick={onBack}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to options
               </Button>
@@ -1543,7 +1552,7 @@ const PricingWizardStep = ({ onNext, onBack, updateUserData, userData }: Pricing
         </Card>
         
         <div className="flex justify-between">
-          <Button variant="ghost" onClick={() => setView("choice")}>
+          <Button variant="ghost" onClick={onBack}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to options
           </Button>
